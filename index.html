@@ -56,7 +56,7 @@ body{
   background:radial-gradient(900px 420px at 50% -180px, var(--topglow), transparent 70%), var(--bg);
   min-height:100vh;
 }
-body::before{ /* พื้นผิวตารางจางๆ */
+body::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:linear-gradient(var(--gridc) 1px, transparent 1px),linear-gradient(90deg, var(--gridc) 1px, transparent 1px);
   background-size:42px 42px;
@@ -567,7 +567,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
  * DATABASE LAYER — สลับอัตโนมัติ 2 โหมด
  *  · local : localStorage (ค่าเริ่มต้น ใช้งานได้ทันที)
  *  · cloud : Supabase (ตั้ง URL + anon key ผ่านปุ่มมุมขวาบน)
- * โครงสร้างตาราง SQL ดูที่ปุ่ม "คัดลอก SQL" ในหน้าตั้งค่า
  * ============================================================ */
 const DB = {
   KEY: 'machinery_appraisal_records_v1',
@@ -579,7 +578,9 @@ const DB = {
   clearConfig() { localStorage.removeItem(this.CFG); },
   connect(c) {
     if (!window.supabase) throw new Error('โหลดไลบรารี Supabase ไม่สำเร็จ (ต้องต่ออินเทอร์เน็ต)');
-    this.client = window.supabase.createClient(c.url, c.anonKey);
+    const k = c.anonKey || c.key;   // รองรับทั้งชื่อใหม่และชื่อเก่า
+    if (!c.url || !k) throw new Error('URL หรือ key ไม่ครบ');
+    this.client = window.supabase.createClient(c.url, k);
     this.mode = 'cloud';
   },
   disconnect() { this.client = null; this.mode = 'local'; },
@@ -718,7 +719,7 @@ createApp({
     function openDbModal() {
       const cfg = DB.config();
       dbUrl.value = cfg ? (cfg.url || '') : '';
-      dbKey.value = cfg ? (cfg.anonKey || '') : '';
+      dbKey.value = cfg ? (cfg.anonKey || cfg.key || '') : '';
       dbTestMsg.value = null;
       showDbModal.value = true;
     }
@@ -734,9 +735,9 @@ createApp({
       if (!url || !key) { dbTestMsg.value = { ok: false, text: 'กรุณากรอก Project URL และ anon key ให้ครบถ้วน' }; return; }
       dbTesting.value = true; dbTestMsg.value = null;
       try {
-        DB.connect({ url, key });
+        DB.connect({ url, anonKey: key });
         await DB.test();
-        DB.saveConfig({ url, key });
+        DB.saveConfig({ url, anonKey: key });
         dbMode.value = 'cloud';
         history.value = await DB.list();
         dbTestMsg.value = { ok: true, text: 'เชื่อมต่อสำเร็จ ✓ ต่อจากนี้การบันทึกจะส่งข้อมูลขึ้น Supabase และซิงก์ทุกเครื่อง' };
@@ -839,7 +840,7 @@ createApp({
     onMounted(async () => {
       // ถ้าเคยตั้งค่า Supabase ไว้ ให้ต่ออัตโนมัติ
       const cfg = DB.config();
-      if (cfg && cfg.url && cfg.anonKey) {
+      if (cfg && cfg.url && (cfg.anonKey || cfg.key)) {
         try { DB.connect(cfg); await DB.test(); dbMode.value = 'cloud'; }
         catch (e) { DB.disconnect(); dbMode.value = 'local'; }
       }
