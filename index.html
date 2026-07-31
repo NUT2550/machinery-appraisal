@@ -65,9 +65,8 @@ body,.card,.stat,.tb th,.tb td,.tb tfoot td,.in,.dbbadge,.iconbtn,.actionbar,.se
 }
 .topline{height:3px;background:linear-gradient(90deg,var(--blue),var(--green));background-size:200% 100%;animation:flow 8s linear infinite}
 @keyframes flow{to{background-position:200% 0}}
-.wrap{position:relative;z-index:1;max-width:1150px;margin:0 auto;padding:0 16px 60px}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 16px 60px}
 
-/* ---------- mount reveal ---------- */
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .rv{animation:rise .6s cubic-bezier(.2,.8,.25,1) both}
 
@@ -109,7 +108,7 @@ h1{font:600 1.25rem 'Kanit';line-height:1.3}
 
 /* ---------- Card ---------- */
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--sh);margin-bottom:16px}
-.cols{display:grid;grid-template-columns:1.04fr .96fr;gap:16px}
+.cols{display:grid;grid-template-columns:1fr 1.12fr;gap:16px}
 .cols .card{margin-bottom:0}
 .spacer{height:16px}
 .p-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
@@ -125,26 +124,37 @@ h1{font:600 1.25rem 'Kanit';line-height:1.3}
 
 /* ---------- Table ---------- */
 table.tb{width:100%;border-collapse:collapse;font-size:.92rem}
-.tb th{font:600 .76rem 'Sarabun';color:var(--mut);text-align:left;padding:9px 10px;background:var(--soft);border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.3px}
+.tb th{font:600 .74rem 'Sarabun';color:var(--mut);text-align:left;padding:9px 10px;background:var(--soft);border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.3px}
 .tb th.num,.tb td.num{text-align:right}
 .tb td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-.tb tbody tr{transition:background .15s}
+.tb tbody tr{transition:background .18s}
 .tb tbody tr:hover{background:var(--soft)}
 .tb tfoot td{background:var(--soft);border-top:2px solid var(--line);border-bottom:none;padding:9px 10px;font-weight:600}
 .tb tfoot .lbl{color:var(--ink);opacity:.85;font-size:.86rem}
 .money{font:600 .95rem 'Kanit';font-variant-numeric:tabular-nums;white-space:nowrap}
 .pos{color:var(--green)!important} .neg{color:var(--red)!important}
-.w-name{width:27%} .w-act{width:44px;text-align:center}
 td.act{text-align:center}
+
+/* fixed-layout tables + column widths */
+.in-tb,.exp-tb{table-layout:fixed}
+.in-tb .c-name{width:30%} .in-tb .c-w{width:22%} .in-tb .c-p{width:22%} .in-tb .c-sum{width:18%} .in-tb .c-act{width:8%}
+.exp-tb{ } .exp-tb .c-method{width:34%} .exp-tb .c-rate{width:15%} .exp-tb .c-time{width:16%} .exp-tb .c-ppl{width:12%} .exp-tb .c-sum{width:23%}
+.exp-tb th{white-space:normal;line-height:1.3}
+.mname{font-weight:600;line-height:1.3;display:block}
+
+/* active-row feedback (the row you're typing in lights up) */
+.in-tb tbody tr:focus-within{background:color-mix(in srgb, var(--green) 7%, transparent)}
+.in-tb tbody tr:focus-within td:first-child{box-shadow:inset 3px 0 0 var(--green)}
+.exp-tb tbody tr:focus-within{background:color-mix(in srgb, var(--red) 7%, transparent)}
+.exp-tb tbody tr:focus-within td:first-child{box-shadow:inset 3px 0 0 var(--red)}
 
 .in{width:100%;border:1px solid var(--line2);border-radius:7px;padding:7px 10px;background:var(--inbg);color:var(--ink);font:500 .92rem 'Sarabun';transition:border-color .15s, box-shadow .15s, background-color .3s}
 .in:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--glow)}
-.in[readonly]{background:var(--soft);color:var(--mut);cursor:default}
 .num-in{text-align:right;font:600 .92rem 'Kanit';font-variant-numeric:tabular-nums}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .dash{color:var(--mut);opacity:.6}
-.hint{font-size:.72rem;color:var(--mut);margin-top:2px}
+.hint{font-size:.7rem;color:var(--mut);margin-top:2px;display:block;line-height:1.35}
 
 .ib{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:6px;color:var(--mut);cursor:pointer;transition:.15s;vertical-align:middle}
 .ib:hover{background:var(--soft);color:var(--ink)}
@@ -248,16 +258,19 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
   .hright{align-items:flex-start}
   .tb thead{display:none}
   .tb,.tb tbody,.tb tfoot,.tb tr,.tb td{display:block;width:100%}
+  .in-tb,.exp-tb{table-layout:auto}
   .tb tbody tr{border:1px solid var(--line);border-radius:9px;margin-bottom:9px;padding:4px;background:var(--card)}
   .tb tbody tr:hover{background:var(--card)}
   .tb td{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px dashed var(--line);padding:7px 10px}
   .tb td:last-child{border-bottom:none}
-  .tb td::before{content:attr(data-label);font:600 .74rem 'Sarabun';color:var(--mut);flex-shrink:0}
+  .tb td::before{content:attr(data-label);font:600 .74rem 'Sarabun';color:var(--mut);flex-shrink:0;max-width:46%}
   .tb td.no-label::before{content:none}
   .tb td .in{width:52%}
   .tb td.hide-m{display:none}
+  .tb td .hint{display:none}
   .tb tfoot tr{border:1px solid var(--line);border-radius:9px;margin-top:4px;overflow:hidden}
   .tb tfoot td{display:flex;justify-content:space-between}
+  .in-tb tbody tr:focus-within td:first-child,.exp-tb tbody tr:focus-within td:first-child{box-shadow:none}
   .actionbar{position:sticky;bottom:0;z-index:40;border-radius:0;border-left:none;border-right:none;border-bottom:none;box-shadow:0 -6px 16px rgba(0,0,0,.12);animation:none}
   .actionbar .note{display:none}
   .toast{bottom:86px}
@@ -279,7 +292,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
       <div>
         <h1>ระบบประเมินราคารับซื้อเครื่องจักร</h1>
-        <p>คำนวณต้นทุนเหมาคัน</p>
+        <p>คำนวณต้นทุนเหมาคัน · กด Enter เพื่อไปช่องถัดไป</p>
       </div>
     </div>
     <div class="hright">
@@ -318,7 +331,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     </div>
   </section>
 
-  <div class="cols rv" style="animation-delay:.15s">
+  <!-- @keydown = กด Enter ไปช่องถัดไป (ช่องสุดท้าย = บันทึก) -->
+  <div class="cols rv" style="animation-delay:.15s" @keydown="onFieldEnter">
     <!-- ===== ส่วนที่ 1: สินค้า (รายรับ) ===== -->
     <section class="card">
       <div class="p-head">
@@ -327,23 +341,23 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <span class="chip cnt">{{ goodsRows.length }} แถว</span>
       </div>
 
-      <table class="tb">
+      <table class="tb in-tb">
         <thead>
           <tr>
-            <th class="w-name">รายการ</th>
-            <th class="num">น้ำหนัก (กก.)</th>
-            <th class="num">ราคาขายส่ง (บาท/กก.)</th>
-            <th class="num">รวมเป็นเงิน (บาท)</th>
-            <th class="w-act"></th>
+            <th class="c-name">รายการ</th>
+            <th class="c-w num">น้ำหนัก</th>
+            <th class="c-p num">ราคา/กก.</th>
+            <th class="c-sum num">รวม (บาท)</th>
+            <th class="c-act"></th>
           </tr>
         </thead>
         <transition-group name="rows" tag="tbody">
           <tr v-for="r in goodsRows" :key="r.id">
-            <td data-label="รายการ"><input class="in" v-model="r.name" placeholder="ระบุชื่อรายการ"></td>
-            <td data-label="น้ำหนัก (กก.)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.weight" placeholder="0.00"></td>
-            <td data-label="ราคาขายส่ง (บาท/กก.)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.price" placeholder="0.00"></td>
-            <td class="num money" data-label="รวมเป็นเงิน">{{ fmt(rowTotal(r)) }}</td>
-            <td class="act no-label" data-label="">
+            <td class="c-name" data-label="รายการ"><input class="in" v-model="r.name" placeholder="ชื่อรายการ"></td>
+            <td class="c-w" data-label="น้ำหนัก (กก.)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.weight" placeholder="0.00"></td>
+            <td class="c-p" data-label="ราคาขายส่ง (บาท/กก.)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.price" placeholder="0.00"></td>
+            <td class="c-sum num money" data-label="รวมเป็นเงิน">{{ fmt(rowTotal(r)) }}</td>
+            <td class="c-act act no-label" data-label="">
               <button class="ib del" @click="removeGoods(r.id)" title="ลบแถวนี้">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
               </button>
@@ -352,13 +366,13 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         </transition-group>
         <tfoot>
           <tr>
-            <td class="lbl" data-label="สรุป">รวมน้ำหนักสินค้าทั้งหมด</td>
+            <td class="lbl" colspan="2" data-label="สรุป">รวมน้ำหนักสินค้าทั้งหมด</td>
+            <td class="hide-m"></td>
             <td class="num money" data-label="น้ำหนัก (กก.)">{{ fmt(totalWeight) }}</td>
-            <td class="hide-m"></td><td class="hide-m"></td><td class="hide-m"></td>
+            <td class="hide-m"></td>
           </tr>
           <tr>
-            <td class="lbl" data-label="สรุป">รวมจำนวนเงินสินค้าทั้งหมด</td>
-            <td class="hide-m"></td><td class="hide-m"></td>
+            <td class="lbl" colspan="3" data-label="สรุป">รวมจำนวนเงินสินค้าทั้งหมด</td>
             <td class="num money pos" data-label="จำนวนเงิน (บาท)">{{ fmt(totalAmount) }}</td>
             <td class="hide-m"></td>
           </tr>
@@ -380,43 +394,40 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <span class="chip cnt">อิงตามเวลา</span>
       </div>
 
-      <table class="tb">
+      <table class="tb exp-tb">
         <thead>
           <tr>
-            <th class="w-name">วิธีการ</th>
-            <th class="num">ต้นทุน/นาที (บาท)</th>
-            <th class="num">เวลาที่ใช้ (นาที)</th>
-            <th class="num">จำนวนคนทำ</th>
-            <th class="num">รวมค่าใช้จ่าย (บาท)</th>
+            <th class="c-method">วิธีการ</th>
+            <th class="c-rate num">บาท/นาที</th>
+            <th class="c-time num">เวลา (นาที)</th>
+            <th class="c-ppl num">คนทำ</th>
+            <th class="c-sum num">รวม (บาท)</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="r in expenseRows" :key="r.id">
-            <td data-label="วิธีการ">
-              <span style="font-weight:600">{{ r.method }}</span>
-              <span v-if="r.hasPeople" class="hint" style="display:block">รวม = อัตรา × เวลา × จำนวนคน</span>
+            <td class="c-method" data-label="วิธีการ">
+              <span class="mname">{{ r.method }}</span>
+              <span v-if="r.hasPeople" class="hint">รวม = อัตรา × เวลา × คน</span>
             </td>
-            <td data-label="ต้นทุน/นาที (บาท)">
-              <input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.rate" style="max-width:110px;margin-left:auto">
-            </td>
-            <td data-label="เวลาที่ใช้ (นาที)"><input class="in num-in" type="number" min="0" step="0.5" inputmode="decimal" v-model.number="r.time" placeholder="0"></td>
-            <td data-label="จำนวนคนทำ">
+            <td class="c-rate" data-label="ต้นทุน/นาที (บาท)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.rate"></td>
+            <td class="c-time" data-label="เวลาที่ใช้ (นาที)"><input class="in num-in" type="number" min="0" step="0.5" inputmode="decimal" v-model.number="r.time" placeholder="0"></td>
+            <td class="c-ppl" data-label="จำนวนคนทำ">
               <input v-if="r.hasPeople" class="in num-in" type="number" min="1" step="1" inputmode="numeric" v-model.number="r.people" placeholder="1">
               <span v-else class="dash">—</span>
             </td>
-            <td class="num money" data-label="รวมค่าใช้จ่าย">{{ fmt(expTotal(r)) }}</td>
+            <td class="c-sum num money" data-label="รวมค่าใช้จ่าย">{{ fmt(expTotal(r)) }}</td>
           </tr>
         </tbody>
         <tfoot>
           <tr>
-            <td class="lbl" data-label="สรุป">รวมค่าใช้จ่ายทั้งหมด</td>
-            <td class="hide-m"></td><td class="hide-m"></td><td class="hide-m"></td>
+            <td class="lbl" colspan="4" data-label="สรุป">รวมค่าใช้จ่ายทั้งหมด</td>
             <td class="num money neg" data-label="รวม (บาท)">{{ fmt(totalExpense) }}</td>
           </tr>
         </tfoot>
       </table>
 
-      <p class="fnote">อัตราต้นทุน/นาที <b>แก้ไขได้ตามหน้างาน</b> (ค่าเริ่มต้น: แม็คโครทุบ 11.67 · ลมแก็สตัด 5.00 · แกะด้วยเครื่องมือ 3.83 · ค่าแรง 1.10)</p>
+      <p class="fnote">อัตราต้นทุน/นาที <b>แก้ไขได้</b> · ค่าเริ่มต้น: แม็คโครทุบ 11.67 · ลมแก็สตัด 5.00 · แกะด้วยเครื่องมือ 3.83 · ค่าแรง 1.10</p>
     </section>
   </div>
 
@@ -426,10 +437,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
   <div class="actionbar rv" style="animation-delay:.25s">
     <span class="note">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }}
+      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }} · <b style="opacity:.85">Enter ช่องสุดท้าย = บันทึก</b>
     </span>
     <button class="btn gho" @click="resetForm">ล้างฟอร์ม</button>
-    <button class="btn pri" @click="saveRecord" :disabled="saving">
+    <button class="btn pri" ref="saveBtn" @click="saveRecord" :disabled="saving">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
       {{ saving ? 'กำลังบันทึก…' : 'บันทึกข้อมูล' }}
     </button>
@@ -583,16 +594,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 <script>
 /* ============================================================
  * 🔑 ค่าเชื่อมต่อ Supabase — ฝังในโค้ด (auto-connect)
- *    anon key เป็น public key โดยออกแบบ (มี RLS คุมสิทธิ์)
- *    ถ้าจะเปลี่ยนโปรเจกต์: แก้ 2 บรรทัดนี้แล้ว deploy ใหม่
  * ============================================================ */
 const EMBED_URL      = 'https://cdrgptjdsrejnrjgokap.supabase.co';
 const EMBED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkcmdwdGpkc3Jlam5yamdva2FwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0Nzg5NzksImV4cCI6MjEwMTA1NDk3OX0.qpfUsELnN9iYtjaqkFeSakdcthDUmBas1JFIAZwVAJ4';
 
 /* ============================================================
  * DATABASE LAYER
- *  · cloud : Supabase (ค่าเริ่มต้น — ต่ออัตโนมัติจากค่าฝัง)
- *  · local : localStorage (fallback เมื่อออฟไลน์ / สลับเอง)
  * ============================================================ */
 const DB = {
   KEY: 'machinery_appraisal_records_v1',
@@ -735,13 +742,11 @@ createApp({
     };
 
     /* ---------- ฐานข้อมูล: auto-connect ---------- */
-    const dbMode = ref('connecting');          // 'connecting' | 'cloud' | 'local'
+    const dbMode = ref('connecting');
     const forceLocal = ref(false);
     const showDbModal = ref(false);
     const sqlCopied = ref(false);
-    const EMBED_URL = EMBED_URL_CONST();       // ส่งเข้า template
     const maskedKey = maskKey(EMBED_ANON_KEY);
-    function EMBED_URL_CONST(){ return EMBED_URL; }
 
     const dbLabel = computed(() =>
       dbMode.value === 'cloud' ? 'Supabase (คลาวด์)' :
@@ -794,6 +799,7 @@ createApp({
     });
 
     const saving = ref(false);
+    const saveBtn = ref(null);
     const makeRef = d => {
       const p = n => String(n).padStart(2, '0');
       return `MK-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
@@ -820,6 +826,24 @@ createApp({
         toast('warn', 'บันทึกไม่สำเร็จ: ' + e.message);
       }
       saving.value = false;
+    }
+
+    /* ---------- กด Enter = ไปช่องถัดไป / ช่องสุดท้าย = บันทึก ---------- */
+    function onFieldEnter(e) {
+      if (e.key !== 'Enter' || e.shiftKey) return;
+      const el = e.target;
+      if (!el || el.tagName !== 'INPUT') return;
+      const inputs = Array.from(document.querySelectorAll('.cols input'))
+        .filter(i => i.offsetParent !== null && !i.disabled && !i.readOnly);
+      const idx = inputs.indexOf(el);
+      e.preventDefault();
+      if (idx >= 0 && idx < inputs.length - 1) {
+        const next = inputs[idx + 1];
+        next.focus();
+        if (typeof next.select === 'function') next.select();   // ไฮไลต์ค่าเดิมให้พิมพ์ทับได้ทันที
+      } else {
+        saveRecord();   // ช่องสุดท้าย → บันทึก
+      }
     }
 
     function loadRecord(rec) {
@@ -864,9 +888,9 @@ createApp({
     onMounted(async () => {
       forceLocal.value = DB.isForcedLocal();
       if (forceLocal.value) {
-        dbMode.value = 'local';                       // ผู้ใช้สลับออฟไลน์ไว้เอง → ไม่ auto-connect
+        dbMode.value = 'local';
       } else {
-        await tryAutoConnect(true);                   // ต่ออัตโนมัติจากค่าฝัง
+        await tryAutoConnect(true);
       }
       try { history.value = await DB.list(); }
       catch (e) { toast('warn', 'โหลดประวัติไม่สำเร็จ: ' + e.message); }
@@ -883,7 +907,7 @@ createApp({
       totalWeight, totalAmount, totalExpense, netAmount, avgVal, disp,
       clock, toastState,
       history, search, filtered, expanded, toggle,
-      fmt, fmtDate, saving, saveRecord, loadRecord, armed, askDelete, resetForm,
+      fmt, fmtDate, saving, saveBtn, saveRecord, onFieldEnter, loadRecord, armed, askDelete, resetForm,
     };
   }
 }).mount('#app');
