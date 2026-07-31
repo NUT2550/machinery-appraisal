@@ -60,7 +60,7 @@ body::before{
   -webkit-mask-image:radial-gradient(ellipse at 50% -10%, black 15%, transparent 72%);
   mask-image:radial-gradient(ellipse at 50% -10%, black 15%, transparent 72%);
 }
-body,.card,.stat,.tb th,.tb td,.tb tfoot td,.in,.dbbadge,.iconbtn,.actionbar,.search input,.sqlbox,.sqlbox pre,.sql-head,.dlist li,.chip,.mark,.addrow,.modal,.unit-select,.qunit{
+body,.card,.stat,.tb th,.tb td,.tb tfoot td,.in,.dbbadge,.iconbtn,.actionbar,.search input,.sqlbox,.sqlbox pre,.sql-head,.dlist li,.chip,.mark,.addrow,.modal,.unit-select{
   transition:background-color .3s,border-color .3s,color .3s;
 }
 .topline{height:3px;background:linear-gradient(90deg,var(--blue),var(--green));background-size:200% 100%;animation:flow 8s linear infinite}
@@ -152,10 +152,14 @@ td.act{text-align:center}
 
 /* quantity input-group with live unit suffix */
 .qtygrp{position:relative;width:100%}
-.qtygrp .in{padding-right:40px}
-.qunit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:600 .68rem 'Kanit';color:var(--mut);pointer-events:none;letter-spacing:.2px}
-@keyframes unitflash{0%{color:var(--amber);transform:translateY(-50%) scale(1.3)}100%{color:var(--mut);transform:translateY(-50%) scale(1)}}
+.qtygrp .in{padding-right:42px}
+.qunit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:600 .66rem 'Kanit';color:var(--mut);pointer-events:none;letter-spacing:.2px}
+@keyframes unitflash{0%{color:var(--amber);transform:translateY(-50%) scale(1.32)}100%{color:var(--mut);transform:translateY(-50%) scale(1)}}
 .qunit.flash{animation:unitflash .5s ease-out}
+
+/* rate auto-converted feedback */
+@keyframes rateflash{0%{border-color:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 24%,transparent)}100%{border-color:var(--line2);box-shadow:none}}
+.in.rateflash{animation:rateflash .65s ease-out}
 
 /* active-row feedback */
 .in-tb tbody tr:focus-within{background:color-mix(in srgb, var(--green) 7%, transparent)}
@@ -315,7 +319,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
       <div>
         <h1>ระบบประเมินราคารับซื้อเครื่องจักร</h1>
-        <p>คำนวณต้นทุนเหมาคัน · แต่ละวิธีเลือกหน่วยได้เอง</p>
+        <p>คำนวณต้นทุนเหมาคัน · กรอกเวลาเป็นนาทีได้ · แต่ละวิธีเลือกหน่วยเอง</p>
       </div>
     </div>
     <div class="hright">
@@ -432,13 +436,13 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
             <td class="c-method" data-label="วิธีการ">
               <span class="mname">{{ r.method }}</span>
               <span class="us-wrap">
-                <select class="unit-select" v-model="r.unit" @change="flashUnit($event)" :title="'หน่วยของ '+r.method">
+                <select class="unit-select" :value="r.unit" @change="setUnit(r, $event.target.value, $event)" :title="'หน่วยของ '+r.method">
                   <option v-for="u in unitOpts" :key="u" :value="u">{{ u }}</option>
                 </select>
               </span>
               <span v-if="r.hasPeople" class="hint">รวม = อัตรา × จำนวน × คน</span>
             </td>
-            <td class="c-rate" :data-label="'อัตรา (บาท/'+r.unit+')'"><input class="in num-in" type="number" min="0" step="1" inputmode="decimal" v-model.number="r.rate"></td>
+            <td class="c-rate" :data-label="'อัตรา (บาท/'+r.unit+')'"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.rate"></td>
             <td class="c-time" :data-label="'จำนวน ('+r.unit+')'">
               <span class="qtygrp">
                 <input class="in num-in" type="number" min="0" :step="r.unit==='ชม.'?0.25:1" inputmode="decimal" v-model.number="r.time" placeholder="0">
@@ -461,9 +465,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </table>
 
       <p class="fnote">
-        แต่ละวิธี<b>เลือกหน่วยได้เอง</b> (ชม./ถัง/ชุด/วัน/เหมา) — อัตรา = บาทต่อหน่วยนั้น · ลมแก็สตัดคิดตาม<b>ถังแก๊ส</b>ที่ใช้
-        <br>ค่าเริ่มต้น: แม็คโครทุบ 700/ชม. · ลมแก็สตัด 1,200/ถัง · แกะด้วยเครื่องมือ 230/ชม. · ค่าแรง 66/ชม.
-        <br>นำทาง: <span class="keys"><span class="kbd">←</span><span class="kbd">→</span> ข้ามช่อง · <span class="kbd">↑</span><span class="kbd">↓</span> ข้ามแถว · <span class="kbd">Enter</span> ถัดไป/บันทึก</span>
+        กรอกเวลาเป็น<b>นาที</b>ได้เลย · แต่ละวิธีเลือกหน่วยเอง (นาที/ชม./ถัง/ชุด/วัน/เหมา) — ลมแก็สตัดคิดตาม<b>ถังแก๊ส</b>
+        <br>สลับ <span class="fx">นาที ↔ ชม.</span> อัตราแปลงให้เองอัตโนมัติ (คงมูลค่าจริง) เช่น 11.67/นาที ↔ ≈700/ชม. · หน่วยนับ (ถัง/ชุด/วัน/เหมา) ไม่แปลงอัตรา
+        <br>ค่าเริ่มต้น: แม็คโครทุบ 11.67/นาที · ลมแก็สตัด 1,200/ถัง · แกะด้วยเครื่องมือ 3.83/นาที · ค่าแรง 1.10/นาที
+        <br>นำทาง: <span class="keys"><span class="kbd">←</span><span class="kbd">→</span> ข้ามช่อง · <span class="kbd">↑</span><span class="kbd">↓</span> ข้ามแถว · <span class="kbd">Enter</span> ถัดไป/บันทึก · เปลี่ยนหน่วย: คลิก/แตะ หรือ <span class="kbd">Tab</span></span>
       </p>
     </section>
   </div>
@@ -546,7 +551,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
                   <h4>ค่าใช้จ่ายการย่อย (รายจ่าย)</h4>
                   <ul>
                     <li v-for="(e, ei) in rec.expenses" :key="ei">
-                      <span>{{ e.method }} — {{ fmt(e.rate) }} ฿/{{ e.unit || 'ชม.' }} × {{ fmt(e.time) }} {{ e.unit || 'ชม.' }}{{ e.people ? ' × ' + e.people + ' คน' : '' }}</span>
+                      <span>{{ e.method }} — {{ fmt(e.rate) }} ฿/{{ e.unit || 'นาที' }} × {{ fmt(e.time) }} {{ e.unit || 'นาที' }}{{ e.people ? ' × ' + e.people + ' คน' : '' }}</span>
                       <span class="dval">{{ fmt(e.total) }} ฿</span>
                     </li>
                   </ul>
@@ -699,6 +704,9 @@ const fmt = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH', { minimumF
 const fmtDate = iso => new Date(iso).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const maskKey = k => k && k.length > 14 ? k.slice(0, 10) + '…' + k.slice(-6) : '—';
 
+/* หน่วยเวลา: จำนวนหน่วยต่อ 1 ชั่วโมง (ใช้แปลงอัตราข้ามหน่วยเวลา) */
+const TIME_PER_HOUR = { 'นาที': 60, 'ชม.': 1 };
+
 const SQL = `create table appraisal_records (
   id         uuid primary key default gen_random_uuid(),
   ref        text,
@@ -733,13 +741,13 @@ createApp({
     const removeGoods = id => { goodsRows.value = goodsRows.value.filter(r => r.id !== id); };
     const rowTotal = r => num(r.weight) * num(r.price);
 
-    /* ---------- ส่วนที่ 2 (แต่ละวิธีเลือกหน่วยได้เอง) ---------- */
-    const unitOpts = ['ชม.', 'ถัง', 'ชุด', 'วัน', 'เหมา'];
+    /* ---------- ส่วนที่ 2 (หน่วยตั้งต้น = นาที / ลมแก็ส = ถัง) ---------- */
+    const unitOpts = ['นาที', 'ชม.', 'ถัง', 'ชุด', 'วัน', 'เหมา'];
     const buildExp = () => ([
-      { id: uid(), method: 'แม็คโครทุบ',        unit: 'ชม.', rate: 700,  time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'ลมแก็สตัด',         unit: 'ถัง', rate: 1200, time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'แกะด้วยเครื่องมือ',  unit: 'ชม.', rate: 230,  time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', unit: 'ชม.', rate: 66,   time: '', people: 1,  hasPeople: true  },
+      { id: uid(), method: 'แม็คโครทุบ',        unit: 'นาที', rate: 11.67, time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ลมแก็สตัด',         unit: 'ถัง',  rate: 1200,  time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'แกะด้วยเครื่องมือ',  unit: 'นาที', rate: 3.83,  time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', unit: 'นาที', rate: 1.10,  time: '', people: 1,  hasPeople: true  },
     ]);
     const expenseRows = ref(buildExp());
     // อัตรา(บาท/หน่วย) × จำนวน(หน่วย) × (คน ถ้ามี)
@@ -825,6 +833,33 @@ createApp({
       if (ok) { toast('ok', 'เชื่อมต่อ Supabase สำเร็จ'); setTimeout(() => showDbModal.value = false, 800); }
     }
 
+    /* ---------- เปลี่ยนหน่วย: แปลงอัตราในกลุ่มเวลา + feedback ---------- */
+    function setUnit(r, newUnit, e) {
+      const oldUnit = r.unit;
+      if (oldUnit === newUnit) return;
+      const tr = e && e.target ? e.target.closest('tr') : null;
+
+      const fromT = TIME_PER_HOUR[oldUnit], toT = TIME_PER_HOUR[newUnit];
+      let converted = false;
+      if (fromT && toT) {
+        // คง "มูลค่าต่อชั่วโมง" ไว้ → อัตราใหม่ = ratePerHour / (หน่วยใหม่ต่อชม.)
+        const ratePerHour = num(r.rate) * fromT;
+        const newRate = ratePerHour / toT;
+        r.rate = Math.round(newRate * 100) / 100;
+        converted = true;
+      }
+      r.unit = newUnit;
+
+      // feedback: suffix จำนวน วาบอำพัน
+      const q = tr && tr.querySelector('.qunit');
+      if (q) { q.classList.remove('flash'); void q.offsetWidth; q.classList.add('flash'); setTimeout(() => q.classList.remove('flash'), 520); }
+      // feedback: ช่องอัตรา วาบเขียว (เฉพาะเมื่อมีการแปลง)
+      if (converted) {
+        const rateIn = tr && tr.querySelector('.c-rate .in');
+        if (rateIn) { rateIn.classList.remove('rateflash'); void rateIn.offsetWidth; rateIn.classList.add('rateflash'); setTimeout(() => rateIn.classList.remove('rateflash'), 660); }
+      }
+    }
+
     /* ---------- ประวัติ ---------- */
     const history = ref([]);
     const search  = ref('');
@@ -868,17 +903,10 @@ createApp({
       saving.value = false;
     }
 
-    /* ---------- เปลี่ยนหน่วย → วาบสีที่ suffix จำนวน ---------- */
-    function flashUnit(e) {
-      const q = e.target.closest('tr')?.querySelector('.qunit');
-      if (!q) return;
-      q.classList.remove('flash'); void q.offsetWidth; q.classList.add('flash');
-      setTimeout(() => q.classList.remove('flash'), 520);
-    }
-
     /* ============================================================
      * ⌨️ GRID KEYBOARD NAVIGATION (ลูกศร + Enter)
-     *  query เฉพาะ input (select หน่วยไม่นับ → ลูกศรใน select ทำงานปกติ)
+     *  query เฉพาะ input → select หน่วยถูกข้ามโดยธรรมชาติ
+     *  (ลูกศรใน select = เลื่อนตัวเลือกตามปกติ, Tab = ไปถึง select ได้)
      * ============================================================ */
     function buildGrid() {
       const inputs = Array.from(document.querySelectorAll('.cols input'))
@@ -917,7 +945,7 @@ createApp({
 
     function onGridKey(e) {
       const el = e.target;
-      if (!el || el.tagName !== 'INPUT') return;
+      if (!el || el.tagName !== 'INPUT') return;   // select/อื่น → ปล่อย default
       const key = e.key;
 
       if (key === 'Enter' && !e.shiftKey) {
@@ -1024,7 +1052,7 @@ createApp({
       dbMode, dbLabel, forceLocal, showDbModal, sqlCopied, SQL, EMBED_URL, maskedKey,
       openDbModal, copySql, goOffline, reconnect,
       goodsRows, addGoods, removeGoods, rowTotal,
-      unitOpts, expenseRows, expTotal, flashUnit,
+      unitOpts, expenseRows, expTotal, setUnit,
       totalWeight, totalAmount, totalExpense, netAmount, avgVal, disp,
       clock, toastState,
       history, search, filtered, expanded, toggle,
