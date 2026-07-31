@@ -150,11 +150,18 @@ td.act{text-align:center}
 
 .in{width:100%;border:1px solid var(--line2);border-radius:7px;padding:7px 10px;background:var(--inbg);color:var(--ink);font:500 .92rem 'Sarabun';transition:border-color .15s, box-shadow .15s, background-color .3s}
 .in:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--glow)}
+/* keyboard-nav arrival pulse (เล่นครั้งเดียวตอนเลื่อนมาถึงช่อง) */
+@keyframes navpulse{0%{box-shadow:0 0 0 0 var(--glow)}100%{box-shadow:0 0 0 7px transparent}}
+.in.justnav{animation:navpulse .42s ease-out}
 .num-in{text-align:right;font:600 .92rem 'Kanit';font-variant-numeric:tabular-nums}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .dash{color:var(--mut);opacity:.6}
 .hint{font-size:.7rem;color:var(--mut);margin-top:2px;display:block;line-height:1.35}
+
+/* keycap chips */
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;background:var(--soft);font:600 .68rem 'Kanit';color:var(--mut);line-height:1;vertical-align:middle}
+.keys{display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap}
 
 .ib{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:6px;color:var(--mut);cursor:pointer;transition:.15s;vertical-align:middle}
 .ib:hover{background:var(--soft);color:var(--ink)}
@@ -164,7 +171,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
 .addrow{width:100%;margin-top:10px;padding:8px;border:1.5px dashed var(--line2);background:transparent;color:var(--mut);border-radius:8px;font:600 .85rem 'Sarabun';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
 .addrow:hover{border-color:var(--blue);color:var(--blue);background:var(--glow)}
-.fnote{margin-top:10px;font-size:.75rem;color:var(--mut);line-height:1.55}
+.fnote{margin-top:10px;font-size:.75rem;color:var(--mut);line-height:1.6}
 .fx{font-family:'Kanit';color:var(--ink);opacity:.75}
 
 .rows-enter-active,.rows-leave-active{transition:all .25s}
@@ -173,7 +180,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
 /* ---------- Action bar ---------- */
 .actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:16px 0;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px}
-.actionbar .note{margin-right:auto;font-size:.76rem;color:var(--mut);display:flex;align-items:center;gap:6px}
+.actionbar .note{margin-right:auto;font-size:.76rem;color:var(--mut);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:7px;border-radius:8px;padding:10px 20px;font:600 .93rem 'Sarabun';cursor:pointer;border:1px solid transparent;transition:.15s}
 .btn:active{transform:scale(.98)}
 .btn.pri{background:var(--blue);color:#fff;box-shadow:0 2px 6px var(--glow)}
@@ -292,7 +299,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
       <div>
         <h1>ระบบประเมินราคารับซื้อเครื่องจักร</h1>
-        <p>คำนวณต้นทุนเหมาคัน · กด Enter เพื่อไปช่องถัดไป</p>
+        <p>คำนวณต้นทุนเหมาคัน · รองรับแป้นพิมพ์เต็มรูปแบบ</p>
       </div>
     </div>
     <div class="hright">
@@ -331,8 +338,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     </div>
   </section>
 
-  <!-- @keydown = กด Enter ไปช่องถัดไป (ช่องสุดท้าย = บันทึก) -->
-  <div class="cols rv" style="animation-delay:.15s" @keydown="onFieldEnter">
+  <!-- @keydown = ลูกศรนำทาง + Enter ไปช่องถัดไป (ช่องสุดท้าย = บันทึก) -->
+  <div class="cols rv" style="animation-delay:.15s" @keydown="onGridKey">
     <!-- ===== ส่วนที่ 1: สินค้า (รายรับ) ===== -->
     <section class="card">
       <div class="p-head">
@@ -429,7 +436,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
       <p class="fnote">
         อัตรา <b>บาท/ชม.</b> แก้ไขได้ · ค่าเริ่มต้น: แม็คโครทุบ 700 · ลมแก็สตัด 300 · แกะด้วยเครื่องมือ 230 · ค่าแรง 66
-        <br><span class="fx">เวลากรอกเป็นชั่วโมง</span> — เช่น 30 นาที = 0.5 · 45 นาที = 0.75 · 1 ชม.ครึ่ง = 1.5
+        <br><span class="fx">เวลากรอกเป็นชั่วโมง</span> — 30 นาที = 0.5 · 45 นาที = 0.75 · 1 ชม.ครึ่ง = 1.5
+        <br>นำทางด้วยแป้นพิมพ์: <span class="keys"><span class="kbd">←</span><span class="kbd">→</span> ข้ามช่อง · <span class="kbd">↑</span><span class="kbd">↓</span> ข้ามแถวในคอลัมน์เดิม</span>
       </p>
     </section>
   </div>
@@ -440,7 +448,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
   <div class="actionbar rv" style="animation-delay:.25s">
     <span class="note">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }} · <b style="opacity:.85">Enter ช่องสุดท้าย = บันทึก</b>
+      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }}
+      <span class="keys">· <span class="kbd">←</span><span class="kbd">→</span><span class="kbd">↑</span><span class="kbd">↓</span> นำทาง · <span class="kbd">Enter</span> ถัดไป/บันทึก</span>
     </span>
     <button class="btn gho" @click="resetForm">ล้างฟอร์ม</button>
     <button class="btn pri" ref="saveBtn" @click="saveRecord" :disabled="saving">
@@ -706,7 +715,6 @@ createApp({
       { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', rate: 66,  time: '', people: 1,  hasPeople: true  },
     ]);
     const expenseRows = ref(buildExp());
-    // ข้อ 1–3: บาท/ชม. × ชม. · ข้อ 4: × จำนวนคน
     const expTotal = r => num(r.rate) * num(r.time) * (r.hasPeople ? num(r.people) : 1);
 
     /* ---------- สรุปผล ---------- */
@@ -832,22 +840,102 @@ createApp({
       saving.value = false;
     }
 
-    /* ---------- กด Enter = ไปช่องถัดไป / ช่องสุดท้าย = บันทึก ---------- */
-    function onFieldEnter(e) {
-      if (e.key !== 'Enter' || e.shiftKey) return;
-      const el = e.target;
-      if (!el || el.tagName !== 'INPUT') return;
+    /* ============================================================
+     * ⌨️ GRID KEYBOARD NAVIGATION (ลูกศร + Enter)
+     *  สร้าง map ของช่องที่กรอกได้เป็น grid (แถว × คอลัมน์) ทุกครั้งที่กดปุ่ม
+     *   → / ←  : ขยับตามลำดับช่อง (1D) ข้ามแถว/ข้ามตาราง
+     *   ↓ / ↑  : ลง/ขึ้น "คอลัมน์เดียวกัน" (clamp เมื่อแถวเป้าหมายมีคอลัมน์น้อยกว่า)
+     *   Enter  : ช่องถัดไป · ช่องสุดท้าย = บันทึก
+     *  ช่องตัวเลข: ดักลูกศรทั้งหมด (กันเบราว์เซอร์บวก/ลบค่าเอง)
+     *  ช่องข้อความ: ←/→ นำทางเฉพาะเมื่อเคอร์เซอร์ชนขอบ/มีการเลือกข้อความ
+     *              (มิฉะนั้นให้เลื่อนเคอร์เซอร์แก้คำได้ตามปกติ)
+     * ============================================================ */
+    function buildGrid() {
       const inputs = Array.from(document.querySelectorAll('.cols input'))
         .filter(i => i.offsetParent !== null && !i.disabled && !i.readOnly);
-      const idx = inputs.indexOf(el);
-      e.preventDefault();
-      if (idx >= 0 && idx < inputs.length - 1) {
-        const next = inputs[idx + 1];
-        next.focus();
-        if (typeof next.select === 'function') next.select();
-      } else {
-        saveRecord();
+      const rowMap = new Map();                 // tr -> [inputs ในแถวนั้น]
+      inputs.forEach(inp => {
+        const tr = inp.closest('tr');
+        if (!tr) return;
+        if (!rowMap.has(tr)) rowMap.set(tr, []);
+        rowMap.get(tr).push(inp);
+      });
+      const rows = Array.from(rowMap.keys());   // เรียงตาม DOM
+      const rowLens = rows.map(tr => rowMap.get(tr).length);
+      const flat = [];                          // {el, ri, ci}
+      const byRC = new Map();                   // "ri,ci" -> flatIndex
+      inputs.forEach(inp => {
+        const tr = inp.closest('tr');
+        const ri = rows.indexOf(tr);
+        const ci = rowMap.get(tr).indexOf(inp);
+        const idx = flat.length;
+        flat.push({ el: inp, ri, ci });
+        byRC.set(ri + ',' + ci, idx);
+      });
+      return { flat, byRC, rowLens };
+    }
+
+    function focusCell(el) {
+      if (!el) return;
+      el.focus();
+      if (typeof el.select === 'function') el.select();   // ไฮไลต์ค่าเดิม → พิมพ์ทับได้ทันที
+      el.classList.remove('justnav');
+      void el.offsetWidth;                                // reflow เพื่อเล่น pulse ใหม่
+      el.classList.add('justnav');
+      setTimeout(() => el.classList.remove('justnav'), 440);
+    }
+
+    function onGridKey(e) {
+      const el = e.target;
+      if (!el || el.tagName !== 'INPUT') return;
+      const key = e.key;
+
+      /* Enter → ช่องถัดไป / ช่องสุดท้าย = บันทึก */
+      if (key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const g = buildGrid();
+        const i = g.flat.findIndex(c => c.el === el);
+        if (i >= 0 && i < g.flat.length - 1) focusCell(g.flat[i + 1].el);
+        else saveRecord();
+        return;
       }
+
+      if (!key.startsWith('Arrow')) return;
+
+      const isNum = el.type === 'number';
+      /* ช่องข้อความ: ให้ลูกศรซ้าย/ขวาเลื่อนเคอร์เซอร์ได้ ยกเว้นอยู่ขอบ/มี selection */
+      if (!isNum && (key === 'ArrowLeft' || key === 'ArrowRight')) {
+        const hasSel  = el.selectionStart !== el.selectionEnd;
+        const atStart = el.selectionStart === 0 && el.selectionEnd === 0;
+        const atEnd   = el.selectionStart === el.value.length && el.selectionEnd === el.value.length;
+        if (key === 'ArrowLeft'  && !atStart && !hasSel) return;
+        if (key === 'ArrowRight' && !atEnd   && !hasSel) return;
+      }
+
+      e.preventDefault();   // กัน input number บวก/ลบค่า + กันเลื่อนเคอร์เซอร์เมื่อจะนำทาง
+      const g = buildGrid();
+      const cur = g.flat.findIndex(c => c.el === el);
+      if (cur < 0) return;
+      const m = g.flat[cur];
+      let target = -1;
+
+      if (key === 'ArrowRight')      target = Math.min(g.flat.length - 1, cur + 1);
+      else if (key === 'ArrowLeft')  target = Math.max(0, cur - 1);
+      else if (key === 'ArrowDown') {
+        const tri = m.ri + 1;
+        if (tri < g.rowLens.length) {
+          const tci = Math.min(m.ci, g.rowLens[tri] - 1);
+          target = g.byRC.get(tri + ',' + tci) ?? -1;
+        }
+      } else if (key === 'ArrowUp') {
+        const tri = m.ri - 1;
+        if (tri >= 0) {
+          const tci = Math.min(m.ci, g.rowLens[tri] - 1);
+          target = g.byRC.get(tri + ',' + tci) ?? -1;
+        }
+      }
+
+      if (target >= 0 && target !== cur) focusCell(g.flat[target].el);
     }
 
     function loadRecord(rec) {
@@ -911,7 +999,7 @@ createApp({
       totalWeight, totalAmount, totalExpense, netAmount, avgVal, disp,
       clock, toastState,
       history, search, filtered, expanded, toggle,
-      fmt, fmtDate, saving, saveBtn, saveRecord, onFieldEnter, loadRecord, armed, askDelete, resetForm,
+      fmt, fmtDate, saving, saveBtn, saveRecord, onGridKey, loadRecord, armed, askDelete, resetForm,
     };
   }
 }).mount('#app');
