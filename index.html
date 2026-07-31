@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<title>ระบบประเมินราคารับซื้อเครื่องจักร · เหมาคัน</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'%3E%3Cpath d='M9.5 7.5h5L18.5 20h-13L9.5 7.5z'/%3E%3Cpath d='M10 7.5V6a2 2 0 0 1 4 0v1.5'/%3E%3C/svg%3E">
+
+<!-- ตั้งธีมก่อนโหลดหน้า (กันจอกระพริบ) -->
+<script>
+  document.documentElement.setAttribute('data-theme',
+    localStorage.getItem('machinery_theme') ||
+    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+</script>
+
+<!-- Fonts: Kanit (หัวข้อ/ตัวเลข) + Sarabun (เนื้อหา) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/thai-500-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/thai-600-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/thai-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-500-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-600-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/kanit@latest/latin-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/thai-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/thai-500-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/thai-600-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/thai-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/latin-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/latin-500-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/sarabun@latest/latin-600-normal.css">
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<!-- Supabase client (ใช้เมื่อเชื่อมต่อคลาวด์ · โหมด local ไม่ต้องใช้เน็ต) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --bg:#f3f5f8; --card:#ffffff; --soft:#f8fafc; --line:#e4e9ef; --line2:#d3dbe4;
+  --ink:#1c2733; --mut:#64748b;
+  --blue:#2563eb; --blue-d:#1d4ed8; --green:#16a34a; --red:#dc2626; --amber:#d97706;
+  --inbg:#ffffff; --gridc:rgba(30,64,120,.05); --topglow:rgba(37,99,235,.06);
+  --sh:0 1px 2px rgba(16,24,40,.06); --sh2:0 8px 20px rgba(16,24,40,.09); --glow:rgba(37,99,235,.13);
+}
+[data-theme="dark"]{
+  --bg:#0f151b; --card:#161e27; --soft:#1b242f; --line:#26313d; --line2:#33404d;
+  --ink:#e7edf3; --mut:#8b9cab;
+  --blue:#5b8def; --blue-d:#7aa4f5; --green:#43c983; --red:#ef7168; --amber:#e8a33d;
+  --inbg:#101720; --gridc:rgba(140,180,220,.045); --topglow:rgba(91,141,239,.09);
+  --sh:0 1px 3px rgba(0,0,0,.4); --sh2:0 10px 24px rgba(0,0,0,.45); --glow:rgba(91,141,239,.2);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[v-cloak]{display:none}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Sarabun',system-ui,sans-serif;font-size:15px;line-height:1.55;color:var(--ink);
+  background:radial-gradient(900px 420px at 50% -180px, var(--topglow), transparent 70%), var(--bg);
+  min-height:100vh;
+}
+body::before{ /* พื้นผิวตารางจางๆ */
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--gridc) 1px, transparent 1px),linear-gradient(90deg, var(--gridc) 1px, transparent 1px);
+  background-size:42px 42px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% -10%, black 15%, transparent 72%);
+  mask-image:radial-gradient(ellipse at 50% -10%, black 15%, transparent 72%);
+}
+body,.card,.stat,.tb th,.tb td,.tb tfoot td,.in,.dbbadge,.iconbtn,.actionbar,.search input,.sqlbox,.sqlbox pre,.sql-head,.dlist li,.chip,.mark,.addrow,.modal{
+  transition:background-color .3s,border-color .3s,color .3s;
+}
+.topline{height:3px;background:linear-gradient(90deg,var(--blue),var(--green))}
+.wrap{position:relative;z-index:1;max-width:1150px;margin:0 auto;padding:0 16px 60px}
+
+/* ---------- Header ---------- */
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:20px 0 16px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:44px;height:44px;border-radius:10px;background:#eff4ff;border:1px solid #dbe6ff;display:grid;place-items:center;color:var(--blue);flex-shrink:0}
+[data-theme="dark"] .mark{background:rgba(91,141,239,.12);border-color:rgba(91,141,239,.3)}
+h1{font:600 1.25rem 'Kanit';line-height:1.3}
+.brand p{font-size:.8rem;color:var(--mut)}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.clock{font:500 .84rem 'Kanit';color:var(--mut);font-variant-numeric:tabular-nums}
+.hbtns{display:flex;align-items:center;gap:8px}
+.dbbadge{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;border:1px solid var(--line2);background:var(--card);font:600 .76rem 'Sarabun';color:var(--mut);cursor:pointer;transition:.18s}
+.dbbadge:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-1px)}
+.dbbadge.cloud{color:var(--green);border-color:var(--green)}
+.led{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#9aa8b7}
+.led.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.iconbtn{width:36px;height:36px;border-radius:8px;border:1px solid var(--line2);background:var(--card);color:var(--mut);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.iconbtn:hover{color:var(--blue);border-color:var(--blue);transform:rotate(14deg)}
+@keyframes tin{from{transform:rotate(-90deg) scale(.3);opacity:0}to{transform:none;opacity:1}}
+.ticon{animation:tin .35s ease}
+
+/* ---------- Summary ---------- */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:10px;padding:14px 18px 13px;box-shadow:var(--sh);transition:box-shadow .2s, transform .2s, background-color .3s, border-color .3s}
+.stat:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.stat.w{--c:var(--amber)} .stat.net{--c:var(--green)} .stat.net.neg{--c:var(--red)} .stat.avg{--c:var(--blue)}
+.stat .lb{font-size:.8rem;color:var(--mut);font-weight:600}
+.stat .vl{font:600 clamp(1.45rem,3vw,1.95rem)/1.25 'Kanit';font-variant-numeric:tabular-nums;color:var(--c);margin-top:2px}
+.stat .vl small{font-size:.5em;color:var(--mut);font-weight:500;margin-left:4px}
+.stat .sb{font-size:.74rem;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* ---------- Card ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--sh);margin-bottom:16px}
+.cols{display:grid;grid-template-columns:1.04fr .96fr;gap:16px}
+.cols .card{margin-bottom:0}
+.spacer{height:16px}
+.p-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.p-head h2{font:600 1.02rem 'Kanit';display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot.g{background:var(--green)} .dot.r{background:var(--red)} .dot.b{background:var(--blue)}
+.chip{font-size:.72rem;font-weight:600;padding:2px 10px;border-radius:99px}
+.chip.in{background:#ecfdf3;color:var(--green);border:1px solid #bbf0cd}
+.chip.out{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+[data-theme="dark"] .chip.in{background:rgba(67,201,131,.12);border-color:rgba(67,201,131,.35)}
+[data-theme="dark"] .chip.out{background:rgba(239,113,104,.12);border-color:rgba(239,113,104,.35)}
+.chip.cnt{background:var(--soft);color:var(--mut);border:1px solid var(--line);margin-left:auto}
+
+/* ---------- Table ---------- */
+table.tb{width:100%;border-collapse:collapse;font-size:.92rem}
+.tb th{font:600 .76rem 'Sarabun';color:var(--mut);text-align:left;padding:9px 10px;background:var(--soft);border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.3px}
+.tb th.num,.tb td.num{text-align:right}
+.tb td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tb tbody tr{transition:background .15s}
+.tb tbody tr:hover{background:var(--soft)}
+.tb tfoot td{background:var(--soft);border-top:2px solid var(--line);border-bottom:none;padding:9px 10px;font-weight:600}
+.tb tfoot .lbl{color:var(--ink);opacity:.85;font-size:.86rem}
+.money{font:600 .95rem 'Kanit';font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--green)!important} .neg{color:var(--red)!important}
+.w-name{width:27%} .w-act{width:44px;text-align:center}
+td.act{text-align:center}
+
+.in{width:100%;border:1px solid var(--line2);border-radius:7px;padding:7px 10px;background:var(--inbg);color:var(--ink);font:500 .92rem 'Sarabun';transition:border-color .15s, box-shadow .15s, background-color .3s}
+.in:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--glow)}
+.num-in{text-align:right;font:600 .92rem 'Kanit';font-variant-numeric:tabular-nums}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.dash{color:var(--mut);opacity:.6}
+.hint{font-size:.72rem;color:var(--mut);margin-top:2px}
+
+.ib{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:6px;color:var(--mut);cursor:pointer;transition:.15s;vertical-align:middle}
+.ib:hover{background:var(--soft);color:var(--ink)}
+.ib.del:hover{background:#fef2f2;color:var(--red)}
+[data-theme="dark"] .ib.del:hover{background:rgba(239,113,104,.14)}
+.ib.armed{width:auto;padding:0 12px;background:var(--red);color:#fff;font:600 .76rem 'Sarabun'}
+
+.addrow{width:100%;margin-top:10px;padding:8px;border:1.5px dashed var(--line2);background:transparent;color:var(--mut);border-radius:8px;font:600 .85rem 'Sarabun';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.addrow:hover{border-color:var(--blue);color:var(--blue);background:var(--glow)}
+.fnote{margin-top:10px;font-size:.75rem;color:var(--mut)}
+.fx{font-family:'Kanit';color:var(--ink);opacity:.75}
+
+.rows-enter-active,.rows-leave-active{transition:all .25s}
+.rows-enter-from{opacity:0;transform:translateY(-6px)}
+.rows-leave-to{opacity:0}
+
+/* ---------- Action bar ---------- */
+.actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:16px 0;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.actionbar .note{margin-right:auto;font-size:.76rem;color:var(--mut);display:flex;align-items:center;gap:6px}
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:8px;padding:10px 20px;font:600 .93rem 'Sarabun';cursor:pointer;border:1px solid transparent;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--blue);color:#fff;box-shadow:0 2px 6px var(--glow)}
+.btn.pri:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 5px 14px var(--glow)}
+.btn.gho{background:var(--card);color:var(--mut);border-color:var(--line2)}
+.btn.gho:hover{color:var(--ink);background:var(--soft)}
+.btn.dgho{background:transparent;border-color:#fecaca;color:var(--red)}
+.btn.dgho:hover{background:#fef2f2}
+[data-theme="dark"] .btn.dgho{border-color:rgba(239,113,104,.4)}
+[data-theme="dark"] .btn.dgho:hover{background:rgba(239,113,104,.1)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+
+/* ---------- History ---------- */
+.search{position:relative;flex:1;max-width:320px;min-width:190px;margin-left:auto}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none}
+.search input{width:100%;padding:8px 12px 8px 33px;border:1px solid var(--line2);border-radius:8px;background:var(--inbg);color:var(--ink);font:500 .88rem 'Sarabun';transition:border-color .15s, box-shadow .15s}
+.search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--glow)}
+.dbnote{display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--mut);margin:-4px 0 10px;flex-wrap:wrap}
+.dbnote b{color:var(--ink);opacity:.8;font-weight:600}
+.refbtn{background:none;border:none;color:var(--blue);font:600 .85rem 'Kanit';cursor:pointer;padding:0;letter-spacing:.3px}
+.refbtn:hover{text-decoration:underline}
+.chev{display:inline-block;margin-left:5px;color:var(--mut);font-size:.62rem;transition:transform .25s}
+.chev.open{transform:rotate(180deg)}
+.mono{font:500 .84rem 'Kanit';font-variant-numeric:tabular-nums;color:var(--mut)}
+.detail td{background:var(--soft)!important;padding:13px 15px!important}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dlist h4{font:600 .76rem 'Sarabun';color:var(--mut);margin-bottom:7px}
+.dlist ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.dlist li{display:flex;justify-content:space-between;gap:10px;font-size:.82rem;padding:5px 10px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:6px}
+.dlist.exp li{border-left-color:var(--red)}
+.dval{font:600 .84rem 'Kanit';white-space:nowrap}
+.dsums{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.dsum{font-size:.76rem;padding:4px 11px;border-radius:99px;border:1px solid var(--line);color:var(--mut);background:var(--card)}
+.dsum.in{border-color:#bbf0cd;color:var(--green)}
+.dsum.out{border-color:#fecaca;color:var(--red)}
+.dsum.pos{border-color:#bbf0cd;color:var(--green)}
+.dsum.neg{border-color:#fecaca;color:var(--red)}
+[data-theme="dark"] .dsum.in,[data-theme="dark"] .dsum.pos{border-color:rgba(67,201,131,.4)}
+[data-theme="dark"] .dsum.out,[data-theme="dark"] .dsum.neg{border-color:rgba(239,113,104,.4)}
+.empty{padding:34px 16px;text-align:center;color:var(--mut)}
+.empty svg{opacity:.35;margin-bottom:8px}
+.empty p{font-size:.86rem}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(8,12,17,.55);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pop .28s cubic-bezier(.2,1.1,.3,1)}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.97)}}
+.m-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 20px;border-bottom:1px solid var(--line)}
+.m-head h3{font:600 1.05rem 'Kanit';display:flex;align-items:center;gap:8px}
+.m-body{padding:16px 20px;display:flex;flex-direction:column;gap:9px}
+.m-body label{font:600 .8rem 'Sarabun';color:var(--mut);margin-top:5px}
+.m-desc{font-size:.82rem;color:var(--mut);line-height:1.65}
+.m-desc b{color:var(--ink)}
+.sqlbox{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:6px}
+.sql-head{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--soft);padding:7px 12px;font-size:.74rem;color:var(--mut)}
+.copybtn{border:1px solid var(--line2);background:var(--card);border-radius:6px;padding:3px 10px;font:600 .72rem 'Sarabun';color:var(--blue);cursor:pointer;transition:.15s;white-space:nowrap}
+.copybtn:hover{border-color:var(--blue)}
+.sqlbox pre{padding:12px;font:400 .72rem/1.65 ui-monospace,Consolas,monospace;color:var(--ink);overflow-x:auto;background:var(--inbg);white-space:pre-wrap}
+.testmsg{font-size:.8rem;padding:9px 12px;border-radius:8px;line-height:1.55}
+.testmsg.ok{background:#ecfdf3;color:var(--green);border:1px solid #bbf0cd}
+.testmsg.err{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+[data-theme="dark"] .testmsg.ok{background:rgba(67,201,131,.1);border-color:rgba(67,201,131,.35)}
+[data-theme="dark"] .testmsg.err{background:rgba(239,113,104,.1);border-color:rgba(239,113,104,.35)}
+.m-foot{display:flex;gap:8px;align-items:center;padding:14px 20px;border-top:1px solid var(--line)}
+.m-foot .sp{flex:1}
+.mono-in{font-family:ui-monospace,Consolas,monospace;font-size:.78rem}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:11px 20px;border-radius:99px;font:500 .88rem 'Sarabun';opacity:0;pointer-events:none;transition:.3s;z-index:120;display:flex;gap:8px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok svg{color:#4ade80}
+.toast.warn svg{color:#fbbf24}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1000px){.cols{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .board{grid-template-columns:1fr}
+  .hright{align-items:flex-start}
+  .tb thead{display:none}
+  .tb,.tb tbody,.tb tfoot,.tb tr,.tb td{display:block;width:100%}
+  .tb tbody tr{border:1px solid var(--line);border-radius:9px;margin-bottom:9px;padding:4px;background:var(--card)}
+  .tb tbody tr:hover{background:var(--card)}
+  .tb td{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px dashed var(--line);padding:7px 10px}
+  .tb td:last-child{border-bottom:none}
+  .tb td::before{content:attr(data-label);font:600 .74rem 'Sarabun';color:var(--mut);flex-shrink:0}
+  .tb td.no-label::before{content:none}
+  .tb td .in{width:52%}
+  .tb td.hide-m{display:none}
+  .tb tfoot tr{border:1px solid var(--line);border-radius:9px;margin-top:4px;overflow:hidden}
+  .tb tfoot td{display:flex;justify-content:space-between}
+  .actionbar{position:sticky;bottom:0;z-index:40;border-radius:0;border-left:none;border-right:none;border-bottom:none;box-shadow:0 -6px 16px rgba(0,0,0,.12)}
+  .actionbar .note{display:none}
+  .toast{bottom:86px}
+  .dgrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+
+<div id="app" class="wrap" v-cloak>
+
+  <header>
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.5 7.5h5L18.5 20h-13L9.5 7.5z"/><path d="M10 7.5V6a2 2 0 0 1 4 0v1.5"/><path d="M9 12h6M8.4 15.5h7.2"/>
+        </svg>
+      </div>
+      <div>
+        <h1>ระบบประเมินราคารับซื้อเครื่องจักร</h1>
+        <p>คำนวณต้นทุนเหมาคัน</p>
+      </div>
+    </div>
+    <div class="hright">
+      <div class="clock">{{ clock }}</div>
+      <div class="hbtns">
+        <button class="dbbadge" :class="{ cloud: dbMode === 'cloud' }" @click="openDbModal" title="ตั้งค่าฐานข้อมูล">
+          <i class="led" :class="{ on: dbMode === 'cloud' }"></i>
+          {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'localStorage' }}
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+        </button>
+        <button class="iconbtn" @click="toggleTheme" :title="theme === 'dark' ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด'">
+          <svg v-if="theme === 'light'" :key="theme" class="ticon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg v-else :key="theme" class="ticon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== สรุปผลลัพธ์ ===== -->
+  <section class="board" aria-label="สรุปผลลัพธ์">
+    <div class="stat w">
+      <div class="lb">น้ำหนักสินค้าสุทธิ</div>
+      <div class="vl">{{ fmt(disp.weight) }}<small>กก.</small></div>
+      <div class="sb">จากสินค้า {{ goodsRows.length }} รายการ</div>
+    </div>
+    <div class="stat net" :class="{ neg: netAmount < 0 }">
+      <div class="lb">จำนวนเงินสุทธิหลังหักค่าใช้จ่าย</div>
+      <div class="vl">{{ fmt(disp.net) }}<small>บาท</small></div>
+      <div class="sb">รายรับ {{ fmt(disp.income) }} − รายจ่าย {{ fmt(disp.expense) }}</div>
+    </div>
+    <div class="stat avg">
+      <div class="lb">ราคาเฉลี่ยต่อกิโลกรัม</div>
+      <div class="vl">{{ totalWeight > 0 ? fmt(disp.avg) : '—' }}<small>บาท/กก.</small></div>
+      <div class="sb">จำนวนเงินสุทธิ ÷ น้ำหนักสุทธิ</div>
+    </div>
+  </section>
+
+  <div class="cols">
+    <!-- ===== ส่วนที่ 1: สินค้า (รายรับ) ===== -->
+    <section class="card">
+      <div class="p-head">
+        <h2><span class="dot g"></span>ส่วนที่ 1 · ประเมินสินค้า</h2>
+        <span class="chip in">รายรับ</span>
+        <span class="chip cnt">{{ goodsRows.length }} แถว</span>
+      </div>
+
+      <table class="tb">
+        <thead>
+          <tr>
+            <th class="w-name">รายการ</th>
+            <th class="num">น้ำหนัก (กก.)</th>
+            <th class="num">ราคาขายส่ง (บาท/กก.)</th>
+            <th class="num">รวมเป็นเงิน (บาท)</th>
+            <th class="w-act"></th>
+          </tr>
+        </thead>
+        <transition-group name="rows" tag="tbody">
+          <tr v-for="r in goodsRows" :key="r.id">
+            <td data-label="รายการ"><input class="in" v-model="r.name" placeholder="ระบุชื่อรายการ"></td>
+            <td data-label="น้ำหนัก (กก.)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.weight" placeholder="0.00"></td>
+            <td data-label="ราคาขายส่ง (บาท/กก.)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.price" placeholder="0.00"></td>
+            <td class="num money" data-label="รวมเป็นเงิน">{{ fmt(rowTotal(r)) }}</td>
+            <td class="act no-label" data-label="">
+              <button class="ib del" @click="removeGoods(r.id)" title="ลบแถวนี้">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </button>
+            </td>
+          </tr>
+        </transition-group>
+        <tfoot>
+          <tr>
+            <td class="lbl" data-label="สรุป">รวมน้ำหนักสินค้าทั้งหมด</td>
+            <td class="num money" data-label="น้ำหนัก (กก.)">{{ fmt(totalWeight) }}</td>
+            <td class="hide-m"></td><td class="hide-m"></td><td class="hide-m"></td>
+          </tr>
+          <tr>
+            <td class="lbl" data-label="สรุป">รวมจำนวนเงินสินค้าทั้งหมด</td>
+            <td class="hide-m"></td><td class="hide-m"></td>
+            <td class="num money pos" data-label="จำนวนเงิน (บาท)">{{ fmt(totalAmount) }}</td>
+            <td class="hide-m"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <button class="addrow" @click="addGoods">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        เพิ่มรายการสินค้า
+      </button>
+      <p class="fnote">สูตร: <span class="fx">รวมเป็นเงิน = น้ำหนัก (กก.) × ราคาขายส่ง (บาท/กก.)</span></p>
+    </section>
+
+    <!-- ===== ส่วนที่ 2: ค่าใช้จ่ายการย่อย (รายจ่าย) ===== -->
+    <section class="card">
+      <div class="p-head">
+        <h2><span class="dot r"></span>ส่วนที่ 2 · ค่าใช้จ่ายการย่อย</h2>
+        <span class="chip out">รายจ่าย</span>
+        <span class="chip cnt">อิงตามเวลา</span>
+      </div>
+
+      <table class="tb">
+        <thead>
+          <tr>
+            <th class="w-name">วิธีการ</th>
+            <th class="num">ต้นทุน/นาที (บาท)</th>
+            <th class="num">เวลาที่ใช้ (นาที)</th>
+            <th class="num">จำนวนคนทำ</th>
+            <th class="num">รวมค่าใช้จ่าย (บาท)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="r in expenseRows" :key="r.id">
+            <td data-label="วิธีการ">
+              <span style="font-weight:600">{{ r.method }}</span>
+              <span v-if="r.hasPeople" class="hint" style="display:block">รวม = อัตรา × เวลา × จำนวนคน</span>
+            </td>
+            <td data-label="ต้นทุน/นาที (บาท)">
+              <input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.rate" style="max-width:110px;margin-left:auto">
+            </td>
+            <td data-label="เวลาที่ใช้ (นาที)"><input class="in num-in" type="number" min="0" step="0.5" inputmode="decimal" v-model.number="r.time" placeholder="0"></td>
+            <td data-label="จำนวนคนทำ">
+              <input v-if="r.hasPeople" class="in num-in" type="number" min="1" step="1" inputmode="numeric" v-model.number="r.people" placeholder="1">
+              <span v-else class="dash">—</span>
+            </td>
+            <td class="num money" data-label="รวมค่าใช้จ่าย">{{ fmt(expTotal(r)) }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="lbl" data-label="สรุป">รวมค่าใช้จ่ายทั้งหมด</td>
+            <td class="hide-m"></td><td class="hide-m"></td><td class="hide-m"></td>
+            <td class="num money neg" data-label="รวม (บาท)">{{ fmt(totalExpense) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p class="fnote">อัตราต้นทุน/นาที <b>แก้ไขได้ตามหน้างาน</b> (ค่าเริ่มต้น: แม็คโครทุบ 11.67 · ลมแก็สตัด 5.00 · แกะด้วยเครื่องมือ 3.83 · ค่าแรง 1.10)</p>
+    </section>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- ===== ปุ่มบันทึก ===== -->
+  <div class="actionbar">
+    <span class="note">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }}
+    </span>
+    <button class="btn gho" @click="resetForm">ล้างฟอร์ม</button>
+    <button class="btn pri" @click="saveRecord" :disabled="saving">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      {{ saving ? 'กำลังบันทึก…' : 'บันทึกข้อมูล' }}
+    </button>
+  </div>
+
+  <!-- ===== ประวัติ ===== -->
+  <section class="card">
+    <div class="p-head">
+      <h2><span class="dot b"></span>ประวัติการประเมินราคา</h2>
+      <div class="search">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input v-model="search" placeholder="ค้นหา เลขที่ / รายการสินค้า / วันที่…">
+      </div>
+    </div>
+    <div class="dbnote">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+      <span>พบ <b>{{ filtered.length }}</b> รายการ · ข้อมูลเก็บใน <b>{{ dbMode === 'cloud' ? 'Supabase (ซิงก์ทุกเครื่อง)' : 'เบราว์เซอร์นี้ (localStorage)' }}</b> · แตะเลขที่เพื่อดูรายละเอียด</span>
+    </div>
+
+    <table class="tb" v-if="filtered.length">
+      <thead>
+        <tr>
+          <th>วันที่/เวลา</th>
+          <th>เลขที่บันทึก</th>
+          <th class="num">น้ำหนักสุทธิ (กก.)</th>
+          <th class="num">จำนวนเงินสุทธิ (บาท)</th>
+          <th class="num">เฉลี่ย (บาท/กก.)</th>
+          <th style="width:92px">การจัดการ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <template v-for="rec in filtered" :key="rec.id">
+          <tr>
+            <td class="mono" data-label="วันที่/เวลา">{{ fmtDate(rec.createdAt) }}</td>
+            <td data-label="เลขที่บันทึก">
+              <button class="refbtn" @click="toggle(rec.id)">{{ rec.ref }}</button>
+              <span class="chev" :class="{ open: expanded === rec.id }">▼</span>
+            </td>
+            <td class="num money" data-label="น้ำหนักสุทธิ (กก.)">{{ fmt(rec.summary.totalWeight) }}</td>
+            <td class="num money" :class="rec.summary.net >= 0 ? 'pos' : 'neg'" data-label="จำนวนเงินสุทธิ (บาท)">{{ fmt(rec.summary.net) }}</td>
+            <td class="num money" data-label="เฉลี่ย (บาท/กก.)">{{ rec.summary.totalWeight > 0 ? fmt(rec.summary.avg) : '—' }}</td>
+            <td class="act no-label" data-label="">
+              <button class="ib" @click="loadRecord(rec)" title="โหลดข้อมูลเข้าฟอร์ม">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
+              <button class="ib del" :class="{ armed: armed === rec.id }" @click="askDelete(rec.id)" :title="armed === rec.id ? 'กดอีกครั้งเพื่อยืนยัน' : 'ลบรายการนี้'">
+                <template v-if="armed === rec.id">ยืนยัน?</template>
+                <svg v-else viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6.5 7l1 13h9l1-13"/><path d="M10 11v5M14 11v5"/></svg>
+              </button>
+            </td>
+          </tr>
+          <tr v-if="expanded === rec.id" class="detail">
+            <td colspan="6">
+              <div class="dgrid">
+                <div class="dlist">
+                  <h4>สินค้า (รายรับ)</h4>
+                  <ul>
+                    <li v-for="(g, gi) in rec.goods" :key="gi">
+                      <span>{{ g.name }} — {{ fmt(g.weight) }} กก. × {{ fmt(g.price) }} ฿</span>
+                      <span class="dval">{{ fmt(g.total) }} ฿</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="dlist exp">
+                  <h4>ค่าใช้จ่ายการย่อย (รายจ่าย)</h4>
+                  <ul>
+                    <li v-for="(e, ei) in rec.expenses" :key="ei">
+                      <span>{{ e.method }} — {{ fmt(e.rate) }} ฿/นาที × {{ fmt(e.time) }} นาที{{ e.people ? ' × ' + e.people + ' คน' : '' }}</span>
+                      <span class="dval">{{ fmt(e.total) }} ฿</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="dsums">
+                <span class="dsum in">รายรับ {{ fmt(rec.summary.totalAmount) }} บาท</span>
+                <span class="dsum out">รายจ่าย {{ fmt(rec.summary.totalExpense) }} บาท</span>
+                <span class="dsum" :class="rec.summary.net >= 0 ? 'pos' : 'neg'">สุทธิ {{ fmt(rec.summary.net) }} บาท</span>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+
+    <div v-else class="empty">
+      <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-8h14l2 8"/><path d="M3 13v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg>
+      <p>{{ search ? 'ไม่พบประวัติที่ตรงกับคำค้น' : 'ยังไม่มีประวัติการบันทึก — กรอกข้อมูลแล้วกด "บันทึกข้อมูล" ด้านบน' }}</p>
+    </div>
+  </section>
+
+  <!-- ===== Modal ตั้งค่าฐานข้อมูล ===== -->
+  <div class="overlay" v-if="showDbModal" @click.self="showDbModal = false">
+    <div class="modal">
+      <div class="m-head">
+        <h3>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue)" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+          เชื่อมต่อฐานข้อมูล Supabase
+        </h3>
+        <button class="ib" @click="showDbModal = false" title="ปิด">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="m-body">
+        <p class="m-desc">
+          เชื่อมแล้วข้อมูลจะ<b>บันทึกขึ้นคลาวด์แบบเรียลไทม์</b> เปิดดู/ใช้ร่วมกันได้หลายเครื่อง
+          · ถ้ายังไม่เชื่อม ระบบจะเก็บไว้ในเบราว์เซอร์นี้ (localStorage) ไปก่อน
+          <br>หา URL และ anon key ได้ที่ <b>Supabase → Project Settings → API</b>
+        </p>
+
+        <label>Project URL</label>
+        <input class="in mono-in" v-model="dbUrl" placeholder="https://xxxxxxxx.supabase.co" spellcheck="false">
+
+        <label>Anon Key (public)</label>
+        <input class="in mono-in" v-model="dbKey" placeholder="eyJhbGciOiJIUzI1NiIs…" spellcheck="false">
+
+        <div class="sqlbox">
+          <div class="sql-head">
+            <span>① รัน SQL นี้ใน Supabase (SQL Editor) ก่อนเชื่อมต่อ</span>
+            <button class="copybtn" @click="copySql">{{ sqlCopied ? 'คัดลอกแล้ว ✓' : 'คัดลอก SQL' }}</button>
+          </div>
+          <pre>{{ SQL }}</pre>
+        </div>
+
+        <div v-if="dbTestMsg" class="testmsg" :class="{ ok: dbTestMsg.ok, err: !dbTestMsg.ok }">{{ dbTestMsg.text }}</div>
+      </div>
+      <div class="m-foot">
+        <button v-if="dbMode === 'cloud'" class="btn dgho" @click="disconnectDb">ยกเลิกการเชื่อมต่อ</button>
+        <span class="sp"></span>
+        <button class="btn gho" @click="showDbModal = false">ปิด</button>
+        <button class="btn pri" @click="connectDb" :disabled="dbTesting">
+          {{ dbTesting ? 'กำลังทดสอบ…' : 'ทดสอบและเชื่อมต่อ' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" :class="[toastState.type, { show: toastState.show }]">
+    <svg v-if="toastState.type==='ok'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+    <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+    {{ toastState.msg }}
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ * DATABASE LAYER — สลับอัตโนมัติ 2 โหมด
+ *  · local : localStorage (ค่าเริ่มต้น ใช้งานได้ทันที)
+ *  · cloud : Supabase (ตั้ง URL + anon key ผ่านปุ่มมุมขวาบน)
+ * โครงสร้างตาราง SQL ดูที่ปุ่ม "คัดลอก SQL" ในหน้าตั้งค่า
+ * ============================================================ */
+const DB = {
+  KEY: 'machinery_appraisal_records_v1',
+  CFG: 'machinery_db_config',
+  client: null,
+  mode: 'local',
+  config() { try { return JSON.parse(localStorage.getItem(this.CFG)) || null; } catch (e) { return null; } },
+  saveConfig(c) { localStorage.setItem(this.CFG, JSON.stringify(c)); },
+  clearConfig() { localStorage.removeItem(this.CFG); },
+  connect(c) {
+    if (!window.supabase) throw new Error('โหลดไลบรารี Supabase ไม่สำเร็จ (ต้องต่ออินเทอร์เน็ต)');
+    this.client = window.supabase.createClient(c.url, c.anonKey);
+    this.mode = 'cloud';
+  },
+  disconnect() { this.client = null; this.mode = 'local'; },
+  _readLocal() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
+  _writeLocal(rows) { localStorage.setItem(this.KEY, JSON.stringify(rows)); },
+  async test() {
+    const { error } = await this.client.from('appraisal_records').select('id').limit(1);
+    if (error) throw new Error(error.message);
+    return true;
+  },
+  async list() {
+    if (this.mode === 'cloud') {
+      const { data, error } = await this.client.from('appraisal_records')
+        .select('*').order('created_at', { ascending: false }).limit(500);
+      if (error) throw new Error(error.message);
+      return data.map(r => ({ id: r.id, ref: r.ref, createdAt: r.created_at, ...r.payload }));
+    }
+    return this._readLocal().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async create(rec) {
+    const payload = { goods: rec.goods, expenses: rec.expenses, summary: rec.summary };
+    if (this.mode === 'cloud') {
+      const { data, error } = await this.client.from('appraisal_records')
+        .insert({ ref: rec.ref, payload }).select().single();
+      if (error) throw new Error(error.message);
+      return { id: data.id, ref: data.ref, createdAt: data.created_at, ...payload };
+    }
+    const rows = this._readLocal(); rows.unshift(rec); this._writeLocal(rows);
+    return rec;
+  },
+  async remove(id) {
+    if (this.mode === 'cloud') {
+      const { error } = await this.client.from('appraisal_records').delete().eq('id', id);
+      if (error) throw new Error(error.message);
+      return true;
+    }
+    this._writeLocal(this._readLocal().filter(r => r.id !== id));
+    return true;
+  }
+};
+
+const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+const fmt = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtDate = iso => new Date(iso).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+const SQL = `create table appraisal_records (
+  id         uuid primary key default gen_random_uuid(),
+  ref        text,
+  created_at timestamptz default now(),
+  payload    jsonb not null
+);
+
+alter table appraisal_records enable row level security;
+
+create policy "อนุญาตทุกผู้ใช้ (anon key)"
+on appraisal_records for all
+using (true) with check (true);`;
+
+createApp({
+  setup() {
+    /* ---------- ธีมสว่าง/มืด ---------- */
+    const theme = ref(document.documentElement.getAttribute('data-theme') || 'light');
+    const toggleTheme = () => { theme.value = theme.value === 'dark' ? 'light' : 'dark'; };
+    watch(theme, v => {
+      document.documentElement.setAttribute('data-theme', v);
+      localStorage.setItem('machinery_theme', v);
+    }, { immediate: true });
+
+    /* ---------- ส่วนที่ 1: สินค้า (รายรับ) ---------- */
+    const defaultGoods = () => ([
+      { id: uid(), name: 'หล่อใหญ่',   weight: '', price: '' },
+      { id: uid(), name: 'หล่อเล็ก',   weight: '', price: '' },
+      { id: uid(), name: 'เหล็กเหนียว', weight: '', price: '' },
+    ]);
+    const goodsRows = ref(defaultGoods());
+    const addGoods    = () => goodsRows.value.push({ id: uid(), name: '', weight: '', price: '' });
+    const removeGoods = id => { goodsRows.value = goodsRows.value.filter(r => r.id !== id); };
+    const rowTotal = r => num(r.weight) * num(r.price);
+
+    /* ---------- ส่วนที่ 2: ค่าใช้จ่าย (รายจ่าย) — อัตราแก้ไขได้ ---------- */
+    const buildExp = () => ([
+      { id: uid(), method: 'แม็คโครทุบ',        rate: 11.67, time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ลมแก็สตัด',         rate: 5.00,  time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'แกะด้วยเครื่องมือ',  rate: 3.83,  time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', rate: 1.10,  time: '', people: 1,  hasPeople: true  },
+    ]);
+    const expenseRows = ref(buildExp());
+    const expTotal = r => num(r.rate) * num(r.time) * (r.hasPeople ? num(r.people) : 1);
+
+    /* ---------- สรุปผล ---------- */
+    const totalWeight  = computed(() => goodsRows.value.reduce((s, r) => s + num(r.weight), 0));
+    const totalAmount  = computed(() => goodsRows.value.reduce((s, r) => s + rowTotal(r), 0));
+    const totalExpense = computed(() => expenseRows.value.reduce((s, r) => s + expTotal(r), 0));
+    const netAmount    = computed(() => totalAmount.value - totalExpense.value);
+    const avgVal       = computed(() => totalWeight.value > 0 ? netAmount.value / totalWeight.value : 0);
+
+    /* ---------- ตัวเลขวิ่ง ---------- */
+    const disp = reactive({ weight: 0, income: 0, expense: 0, net: 0, avg: 0 });
+    const raf = {};
+    const tween = (k, to) => {
+      cancelAnimationFrame(raf[k]);
+      const from = disp[k], t0 = performance.now(), dur = 420;
+      const step = t => {
+        const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+        disp[k] = from + (to - from) * e;
+        if (p < 1) raf[k] = requestAnimationFrame(step);
+      };
+      raf[k] = requestAnimationFrame(step);
+    };
+    watch([totalWeight, totalAmount, totalExpense, netAmount, avgVal],
+      ([w, i, x, n, a]) => { tween('weight', w); tween('income', i); tween('expense', x); tween('net', n); tween('avg', a); });
+
+    /* ---------- นาฬิกา ---------- */
+    const clock = ref('');
+    const tick = () => clock.value = new Date().toLocaleString('th-TH',
+      { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    /* ---------- Toast ---------- */
+    const toastState = reactive({ show: false, msg: '', type: 'ok' });
+    let tTimer;
+    const toast = (type, msg) => {
+      toastState.show = true; toastState.type = type; toastState.msg = msg;
+      clearTimeout(tTimer); tTimer = setTimeout(() => toastState.show = false, 3000);
+    };
+
+    /* ---------- ตั้งค่าฐานข้อมูล ---------- */
+    const dbMode = ref('local');
+    const showDbModal = ref(false);
+    const dbUrl = ref(''); const dbKey = ref('');
+    const dbTesting = ref(false); const dbTestMsg = ref(null);
+    const sqlCopied = ref(false);
+
+    function openDbModal() {
+      const cfg = DB.config();
+      dbUrl.value = cfg ? (cfg.url || '') : '';
+      dbKey.value = cfg ? (cfg.anonKey || '') : '';
+      dbTestMsg.value = null;
+      showDbModal.value = true;
+    }
+    async function copySql() {
+      try {
+        await navigator.clipboard.writeText(SQL);
+        sqlCopied.value = true;
+        setTimeout(() => sqlCopied.value = false, 2000);
+      } catch (e) { toast('warn', 'คัดลอกไม่สำเร็จ — กรุณาเลือกข้อความในกล่องเอง'); }
+    }
+    async function connectDb() {
+      const url = dbUrl.value.trim(), key = dbKey.value.trim();
+      if (!url || !key) { dbTestMsg.value = { ok: false, text: 'กรุณากรอก Project URL และ anon key ให้ครบถ้วน' }; return; }
+      dbTesting.value = true; dbTestMsg.value = null;
+      try {
+        DB.connect({ url, key });
+        await DB.test();
+        DB.saveConfig({ url, key });
+        dbMode.value = 'cloud';
+        history.value = await DB.list();
+        dbTestMsg.value = { ok: true, text: 'เชื่อมต่อสำเร็จ ✓ ต่อจากนี้การบันทึกจะส่งข้อมูลขึ้น Supabase และซิงก์ทุกเครื่อง' };
+        toast('ok', 'เชื่อมต่อ Supabase สำเร็จ');
+        setTimeout(() => showDbModal.value = false, 1000);
+      } catch (e) {
+        DB.disconnect(); dbMode.value = 'local';
+        dbTestMsg.value = { ok: false, text: 'เชื่อมต่อไม่สำเร็จ: ' + e.message + ' — ตรวจสอบว่ารัน SQL สร้างตาราง + policy แล้ว และ URL/key ถูกต้อง' };
+      }
+      dbTesting.value = false;
+    }
+    async function disconnectDb() {
+      DB.disconnect(); DB.clearConfig(); dbMode.value = 'local';
+      history.value = await DB.list();
+      showDbModal.value = false;
+      toast('warn', 'ตัดการเชื่อมต่อแล้ว — กลับไปบันทึกในเบราว์เซอร์นี้');
+    }
+
+    /* ---------- ประวัติ ---------- */
+    const history = ref([]);
+    const search  = ref('');
+    const expanded = ref(null);
+    const toggle = id => { expanded.value = expanded.value === id ? null : id; };
+    const filtered = computed(() => {
+      const q = search.value.trim().toLowerCase();
+      if (!q) return history.value;
+      return history.value.filter(r =>
+        [r.ref, fmtDate(r.createdAt), r.goods.map(g => g.name).join(' '), fmt(r.summary.net)]
+          .join(' ').toLowerCase().includes(q));
+    });
+
+    const saving = ref(false);
+    const makeRef = d => {
+      const p = n => String(n).padStart(2, '0');
+      return `MK-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+    };
+
+    async function saveRecord() {
+      if (totalWeight.value <= 0 && totalAmount.value <= 0 && totalExpense.value <= 0) {
+        toast('warn', 'ยังไม่มีข้อมูลสำหรับบันทึก — กรุณากรอกน้ำหนัก/ราคา หรือค่าใช้จ่ายก่อน');
+        return;
+      }
+      saving.value = true;
+      const now = new Date();
+      const rec = {
+        id: uid(), ref: makeRef(now), createdAt: now.toISOString(),
+        goods: goodsRows.value.map(r => ({ name: r.name || 'ไม่ระบุชื่อ', weight: num(r.weight), price: num(r.price), total: rowTotal(r) })),
+        expenses: expenseRows.value.map(r => ({ method: r.method, rate: num(r.rate), time: num(r.time), people: r.hasPeople ? num(r.people) : null, total: expTotal(r) })),
+        summary: { totalWeight: totalWeight.value, totalAmount: totalAmount.value, totalExpense: totalExpense.value, net: netAmount.value, avg: avgVal.value },
+      };
+      try {
+        const saved = await DB.create(rec);
+        history.value = [saved, ...history.value];
+        toast('ok', `บันทึก ${rec.ref} เรียบร้อยแล้ว${dbMode.value === 'cloud' ? ' (ขึ้นคลาวด์แล้ว)' : ''}`);
+      } catch (e) {
+        toast('warn', 'บันทึกไม่สำเร็จ: ' + e.message);
+      }
+      saving.value = false;
+    }
+
+    function loadRecord(rec) {
+      goodsRows.value = rec.goods.map(g => ({ id: uid(), name: g.name, weight: g.weight || '', price: g.price || '' }));
+      expenseRows.value = buildExp().map(r => {
+        const s = rec.expenses.find(e => e.method === r.method);
+        return {
+          ...r,
+          rate: s && s.rate != null ? s.rate : r.rate,
+          time: s ? (s.time || '') : '',
+          people: r.hasPeople ? (s && s.people ? s.people : 1) : '',
+        };
+      });
+      expanded.value = null;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast('ok', 'โหลดข้อมูลเข้าฟอร์มแล้ว — แก้ไขแล้วบันทึกใหม่ได้เลย');
+    }
+
+    const armed = ref(null);
+    let aTimer;
+    function askDelete(id) {
+      if (armed.value === id) { doDelete(id); return; }
+      armed.value = id;
+      clearTimeout(aTimer);
+      aTimer = setTimeout(() => armed.value = null, 3000);
+    }
+    async function doDelete(id) {
+      try {
+        await DB.remove(id);
+        history.value = history.value.filter(r => r.id !== id);
+        armed.value = null;
+        toast('ok', 'ลบรายการประวัติออกแล้ว');
+      } catch (e) { toast('warn', 'ลบไม่สำเร็จ: ' + e.message); }
+    }
+
+    function resetForm() {
+      goodsRows.value = defaultGoods();
+      expenseRows.value = buildExp();
+      toast('warn', 'ล้างฟอร์มกลับสู่ค่าเริ่มต้นแล้ว');
+    }
+
+    onMounted(async () => {
+      // ถ้าเคยตั้งค่า Supabase ไว้ ให้ต่ออัตโนมัติ
+      const cfg = DB.config();
+      if (cfg && cfg.url && cfg.anonKey) {
+        try { DB.connect(cfg); await DB.test(); dbMode.value = 'cloud'; }
+        catch (e) { DB.disconnect(); dbMode.value = 'local'; }
+      }
+      try { history.value = await DB.list(); }
+      catch (e) { toast('warn', 'โหลดประวัติไม่สำเร็จ: ' + e.message); }
+      tick();
+      setInterval(tick, 1000);
+    });
+
+    return {
+      theme, toggleTheme,
+      dbMode, showDbModal, dbUrl, dbKey, dbTesting, dbTestMsg, sqlCopied, SQL,
+      openDbModal, connectDb, disconnectDb, copySql,
+      goodsRows, addGoods, removeGoods, rowTotal,
+      expenseRows, expTotal,
+      totalWeight, totalAmount, totalExpense, netAmount, avgVal, disp,
+      clock, toastState,
+      history, search, filtered, expanded, toggle,
+      fmt, fmtDate, saving, saveRecord, loadRecord, armed, askDelete, resetForm,
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
