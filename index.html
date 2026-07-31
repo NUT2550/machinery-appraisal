@@ -138,11 +138,11 @@ td.act{text-align:center}
 /* fixed-layout tables + column widths */
 .in-tb,.exp-tb{table-layout:fixed}
 .in-tb .c-name{width:30%} .in-tb .c-w{width:22%} .in-tb .c-p{width:22%} .in-tb .c-sum{width:18%} .in-tb .c-act{width:8%}
-.exp-tb{ } .exp-tb .c-method{width:34%} .exp-tb .c-rate{width:15%} .exp-tb .c-time{width:16%} .exp-tb .c-ppl{width:12%} .exp-tb .c-sum{width:23%}
+.exp-tb .c-method{width:34%} .exp-tb .c-rate{width:15%} .exp-tb .c-time{width:16%} .exp-tb .c-ppl{width:12%} .exp-tb .c-sum{width:23%}
 .exp-tb th{white-space:normal;line-height:1.3}
 .mname{font-weight:600;line-height:1.3;display:block}
 
-/* active-row feedback (the row you're typing in lights up) */
+/* active-row feedback */
 .in-tb tbody tr:focus-within{background:color-mix(in srgb, var(--green) 7%, transparent)}
 .in-tb tbody tr:focus-within td:first-child{box-shadow:inset 3px 0 0 var(--green)}
 .exp-tb tbody tr:focus-within{background:color-mix(in srgb, var(--red) 7%, transparent)}
@@ -164,7 +164,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
 .addrow{width:100%;margin-top:10px;padding:8px;border:1.5px dashed var(--line2);background:transparent;color:var(--mut);border-radius:8px;font:600 .85rem 'Sarabun';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
 .addrow:hover{border-color:var(--blue);color:var(--blue);background:var(--glow)}
-.fnote{margin-top:10px;font-size:.75rem;color:var(--mut)}
+.fnote{margin-top:10px;font-size:.75rem;color:var(--mut);line-height:1.55}
 .fx{font-family:'Kanit';color:var(--ink);opacity:.75}
 
 .rows-enter-active,.rows-leave-active{transition:all .25s}
@@ -398,8 +398,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <thead>
           <tr>
             <th class="c-method">วิธีการ</th>
-            <th class="c-rate num">บาท/นาที</th>
-            <th class="c-time num">เวลา (นาที)</th>
+            <th class="c-rate num">บาท/ชม.</th>
+            <th class="c-time num">เวลา (ชม.)</th>
             <th class="c-ppl num">คนทำ</th>
             <th class="c-sum num">รวม (บาท)</th>
           </tr>
@@ -410,8 +410,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
               <span class="mname">{{ r.method }}</span>
               <span v-if="r.hasPeople" class="hint">รวม = อัตรา × เวลา × คน</span>
             </td>
-            <td class="c-rate" data-label="ต้นทุน/นาที (บาท)"><input class="in num-in" type="number" min="0" step="0.01" inputmode="decimal" v-model.number="r.rate"></td>
-            <td class="c-time" data-label="เวลาที่ใช้ (นาที)"><input class="in num-in" type="number" min="0" step="0.5" inputmode="decimal" v-model.number="r.time" placeholder="0"></td>
+            <td class="c-rate" data-label="ต้นทุน/ชม. (บาท)"><input class="in num-in" type="number" min="0" step="1" inputmode="decimal" v-model.number="r.rate"></td>
+            <td class="c-time" data-label="เวลาที่ใช้ (ชม.)"><input class="in num-in" type="number" min="0" step="0.25" inputmode="decimal" v-model.number="r.time" placeholder="0"></td>
             <td class="c-ppl" data-label="จำนวนคนทำ">
               <input v-if="r.hasPeople" class="in num-in" type="number" min="1" step="1" inputmode="numeric" v-model.number="r.people" placeholder="1">
               <span v-else class="dash">—</span>
@@ -427,7 +427,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         </tfoot>
       </table>
 
-      <p class="fnote">อัตราต้นทุน/นาที <b>แก้ไขได้</b> · ค่าเริ่มต้น: แม็คโครทุบ 11.67 · ลมแก็สตัด 5.00 · แกะด้วยเครื่องมือ 3.83 · ค่าแรง 1.10</p>
+      <p class="fnote">
+        อัตรา <b>บาท/ชม.</b> แก้ไขได้ · ค่าเริ่มต้น: แม็คโครทุบ 700 · ลมแก็สตัด 300 · แกะด้วยเครื่องมือ 230 · ค่าแรง 66
+        <br><span class="fx">เวลากรอกเป็นชั่วโมง</span> — เช่น 30 นาที = 0.5 · 45 นาที = 0.75 · 1 ชม.ครึ่ง = 1.5
+      </p>
     </section>
   </div>
 
@@ -508,7 +511,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
                   <h4>ค่าใช้จ่ายการย่อย (รายจ่าย)</h4>
                   <ul>
                     <li v-for="(e, ei) in rec.expenses" :key="ei">
-                      <span>{{ e.method }} — {{ fmt(e.rate) }} ฿/นาที × {{ fmt(e.time) }} นาที{{ e.people ? ' × ' + e.people + ' คน' : '' }}</span>
+                      <span>{{ e.method }} — {{ fmt(e.rate) }} ฿/ชม. × {{ fmt(e.time) }} ชม.{{ e.people ? ' × ' + e.people + ' คน' : '' }}</span>
                       <span class="dval">{{ fmt(e.total) }} ฿</span>
                     </li>
                   </ul>
@@ -695,14 +698,15 @@ createApp({
     const removeGoods = id => { goodsRows.value = goodsRows.value.filter(r => r.id !== id); };
     const rowTotal = r => num(r.weight) * num(r.price);
 
-    /* ---------- ส่วนที่ 2 ---------- */
+    /* ---------- ส่วนที่ 2 (หน่วย: บาท/ชม. × ชม.) ---------- */
     const buildExp = () => ([
-      { id: uid(), method: 'แม็คโครทุบ',        rate: 11.67, time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'ลมแก็สตัด',         rate: 5.00,  time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'แกะด้วยเครื่องมือ',  rate: 3.83,  time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', rate: 1.10,  time: '', people: 1,  hasPeople: true  },
+      { id: uid(), method: 'แม็คโครทุบ',        rate: 700, time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ลมแก็สตัด',         rate: 300, time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'แกะด้วยเครื่องมือ',  rate: 230, time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', rate: 66,  time: '', people: 1,  hasPeople: true  },
     ]);
     const expenseRows = ref(buildExp());
+    // ข้อ 1–3: บาท/ชม. × ชม. · ข้อ 4: × จำนวนคน
     const expTotal = r => num(r.rate) * num(r.time) * (r.hasPeople ? num(r.people) : 1);
 
     /* ---------- สรุปผล ---------- */
@@ -840,9 +844,9 @@ createApp({
       if (idx >= 0 && idx < inputs.length - 1) {
         const next = inputs[idx + 1];
         next.focus();
-        if (typeof next.select === 'function') next.select();   // ไฮไลต์ค่าเดิมให้พิมพ์ทับได้ทันที
+        if (typeof next.select === 'function') next.select();
       } else {
-        saveRecord();   // ช่องสุดท้าย → บันทึก
+        saveRecord();
       }
     }
 
