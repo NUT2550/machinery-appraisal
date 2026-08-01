@@ -175,14 +175,19 @@ td.act{text-align:center}
 .unit-select:hover{border-color:var(--amber)}
 .unit-select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px color-mix(in srgb,var(--amber) 18%,transparent)}
 
-/* quantity input-group with live unit suffix + hour-equivalent hint */
+/* quantity input-group with live unit suffix + equivalence hints */
 .qtygrp{position:relative;width:100%}
 .qtygrp .in{padding-right:42px}
 .qunit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:600 .66rem 'Kanit';color:var(--mut);pointer-events:none;letter-spacing:.2px}
 @keyframes unitflash{0%{color:var(--amber);transform:translateY(-50%) scale(1.32)}100%{color:var(--mut);transform:translateY(-50%) scale(1)}}
 .qunit.flash{animation:unitflash .5s ease-out}
 .eq-hint{display:block;font:600 .66rem 'Kanit';color:var(--green);margin-top:3px;letter-spacing:.2px;animation:eqin .3s ease}
+.eq-hint.conv{color:var(--amber)}
 @keyframes eqin{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+
+/* market-reference note under method name */
+.hint.ref{display:flex;align-items:center;gap:5px;color:var(--amber);opacity:.95;font-weight:600;margin-top:5px}
+.hint.ref svg{flex-shrink:0;opacity:.85}
 
 /* active-row feedback */
 .in-tb tbody tr:focus-within{background:color-mix(in srgb, var(--green) 7%, transparent)}
@@ -360,7 +365,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
       <div>
         <h1>ระบบประเมินราคารับซื้อเครื่องจักร</h1>
-        <p>คำนวณต้นทุนเหมาคัน · ตั้งชื่อเครื่อง · อัตรา/ชม. กรอกนาที ระบบหารให้เอง</p>
+        <p>คำนวณต้นทุนเหมาคัน · ลม=ท่อ · แก๊ส=กิโล (เทียบถังให้) · เวลา=นาที (÷60 ให้)</p>
       </div>
     </div>
     <div class="hright">
@@ -488,15 +493,15 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       <div class="p-head">
         <h2><span class="dot r"></span>ส่วนที่ 2 · ค่าใช้จ่ายการย่อย</h2>
         <span class="chip out">รายจ่าย</span>
-        <span class="chip cnt">นาที → หาร 60 เอง</span>
+        <span class="chip cnt">แยกหน่วยตามจริง</span>
       </div>
 
       <table class="tb exp-tb">
         <thead>
           <tr>
             <th class="c-method">วิธีการ<span class="th-sub">+ เลือกหน่วย</span></th>
-            <th class="c-rate num">อัตรา<span class="th-sub">บาท/ชม.*</span></th>
-            <th class="c-time num">เวลา<span class="th-sub">กรอกเป็นนาที</span></th>
+            <th class="c-rate num">อัตรา<span class="th-sub">บาท/หน่วย</span></th>
+            <th class="c-time num">จำนวน</th>
             <th class="c-ppl num">คน</th>
             <th class="c-sum num">รวม (บาท)</th>
           </tr>
@@ -510,15 +515,20 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
                   <option v-for="u in unitOpts" :key="u" :value="u">{{ u }}</option>
                 </select>
               </span>
+              <span v-if="refNote(r)" class="hint ref">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7V4a1 1 0 0 1 1-1h8.3a1 1 0 0 1 .7.3l7.5 7.5a1 1 0 0 1 0 1.4z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
+                {{ refNote(r) }}
+              </span>
               <span v-if="r.hasPeople" class="hint">รวม = อัตรา × (นาที÷60) × คน</span>
             </td>
             <td class="c-rate" :data-label="'อัตรา ('+rateUnit(r)+')'"><input class="in num-in" type="number" min="0" step="any" inputmode="decimal" v-model.number="r.rate"></td>
-            <td class="c-time" :data-label="'เวลา ('+qtyUnit(r)+')'">
+            <td class="c-time" :data-label="'จำนวน ('+qtyUnit(r)+')'">
               <span class="qtygrp">
                 <input class="in num-in" type="number" min="0" step="any" inputmode="decimal" v-model.number="r.time" placeholder="0">
                 <span class="qunit">{{ qtyUnit(r) }}</span>
               </span>
               <span v-if="r.unit==='นาที' && num(r.time)>0" class="eq-hint">≈ {{ fmt(num(r.time)/60) }} ชม.</span>
+              <span v-else-if="r.conv && r.unit===r.conv.base && num(r.time)>0" class="eq-hint conv">≈ {{ fmt(num(r.time)/r.conv.per) }} {{ r.conv.unit }}</span>
             </td>
             <td class="c-ppl" data-label="จำนวนคนทำ">
               <input v-if="r.hasPeople" class="in num-in" type="number" min="1" step="1" inputmode="numeric" v-model.number="r.people" placeholder="1">
@@ -546,9 +556,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
 
       <p class="fnote">
-        <b>อัตรา = บาท/ชม.</b> (ต่อชั่วโมง) · <b>เวลากรอกเป็นนาที</b> — ระบบเอา ÷ 60 ให้เอง เช่น 700 บาท/ชม. × 30 นาที = 350 บาท
-        <br>ลมแก็สตัดเลือกหน่วยเป็น <b>ถัง</b> ได้ (อัตรา = บาท/ถัง · จำนวน = กี่ถัง · ไม่หาร) · *หน่วยนับอื่น (ชุด/วัน/เหมา) อัตรา = บาท/หน่วยนั้น
-        <br>ค่าเริ่มต้น: แม็คโครทุบ 700/ชม. · ลมแก็สตัด 1,200/ถัง · แกะด้วยเครื่องมือ 230/ชม. · ค่าแรง 66/ชม.
+        <b>ลม (อ็อกซิเจน)</b> = <b>ท่อ</b> (140 บาท/ท่อ) · <b>แก๊ส (อะเซทิลีน)</b> = <b>กิโล</b> (30 บาท/กก.) — 1 ถังแก๊ส = 15 กก. ≈ 450 บาท · กรอกกี่โลระบบเทียบให้เองว่า ≈ กี่ถัง
+        <br><b>อัตราเวลา = บาท/ชม.</b> · <b>เวลากรอกเป็นนาที</b> ระบบ ÷ 60 ให้เอง เช่น 700 บาท/ชม. × 30 นาที = 350 บาท
+        <br>ค่าเริ่มต้น: แม็คโครทุบ 700/ชม. · ลม 140/ท่อ · แก๊ส 30/กก. · แกะด้วยเครื่องมือ 230/ชม. · ค่าแรง 66/ชม.
         <br>นำทาง: <span class="keys"><span class="kbd">←</span><span class="kbd">→</span> ข้ามช่อง · <span class="kbd">↑</span><span class="kbd">↓</span> ข้ามแถว · <span class="kbd">Enter</span> ถัดไป/บันทึก · เปลี่ยนหน่วย: คลิก/แตะ หรือ <span class="kbd">Tab</span></span>
       </p>
     </section>
@@ -788,7 +798,8 @@ const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
-const fmt = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt  = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt0 = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH');   // ไม่มีทศนิยม (ใช้กับข้อมูลอ้างอิง)
 const fmtDate = iso => new Date(iso).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const maskKey = k => k && k.length > 14 ? k.slice(0, 10) + '…' + k.slice(-6) : '—';
 
@@ -833,22 +844,33 @@ createApp({
     const rowTotal = r => num(r.weight) * num(r.price);
 
     /* ============================================================
-     * ส่วนที่ 2 — โมเดลตรงตัว:
-     *  · หน่วย 'นาที'  → อัตรา = บาท/ชม. , จำนวน = นาที , ระบบ ÷60 เอง
-     *  · หน่วยนับอื่น  → อัตรา = บาท/หน่วย , จำนวน = กี่หน่วย (ไม่หาร)
+     * ส่วนที่ 2 — แยกหน่วยตามจริง:
+     *  · 'นาที' → อัตรา = บาท/ชม. , จำนวน = นาที , ÷60 เอง
+     *  · 'ท่อ'  → ลม (อ็อกซิเจน) 140 บาท/ท่อ
+     *  · 'กิโล' → แก๊ส (อะเซทิลีน) 30 บาท/กก. + เทียบถังให้ (1 ถัง=15กก.=450฿)
+     *  · หน่วยนับอื่น → อัตรา = บาท/หน่วย , ไม่หาร
      * ============================================================ */
-    const unitOpts = ['นาที', 'ถัง', 'ชุด', 'วัน', 'เหมา'];
+    const unitOpts = ['นาที', 'ท่อ', 'กิโล', 'ถัง', 'ชุด', 'วัน', 'เหมา'];
+
+    // ข้อมูลอ้างอิงราคาตลาดของแก๊ส (single source of truth)
+    const gasConv = { base: 'กิโล', per: 15, unit: 'ถัง', price: 450 };   // 1 ถัง = 15 กก. = 450 บาท → 30 บาท/กก.
+
     const buildExp = () => ([
-      { id: uid(), method: 'แม็คโครทุบ',        unit: 'นาที', rate: 700,  time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'ลมแก็สตัด',         unit: 'ถัง',  rate: 1200, time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'แกะด้วยเครื่องมือ',  unit: 'นาที', rate: 230,  time: '', people: '', hasPeople: false },
-      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', unit: 'นาที', rate: 66,   time: '', people: 1,  hasPeople: true  },
+      { id: uid(), method: 'แม็คโครทุบ',        unit: 'นาที', rate: 700,                       time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ลม (อ็อกซิเจน)',     unit: 'ท่อ',  rate: 140,                       time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'แก๊ส (อะเซทิลีน)',   unit: 'กิโล', rate: gasConv.price / gasConv.per, time: '', people: '', hasPeople: false, conv: gasConv },
+      { id: uid(), method: 'แกะด้วยเครื่องมือ',  unit: 'นาที', rate: 230,                       time: '', people: '', hasPeople: false },
+      { id: uid(), method: 'ค่าแรง + จำนวนคนทำ', unit: 'นาที', rate: 66,                        time: '', people: 1,  hasPeople: true  },
     ]);
     const expenseRows = ref(buildExp());
 
     const rateUnit = r => r.unit === 'นาที' ? 'บาท/ชม.' : 'บาท/' + r.unit;
     const qtyUnit  = r => r.unit === 'นาที' ? 'นาที'   : r.unit;
 
+    // ป้ายราคาตลาดใต้ชื่อ (สร้างจาก conv อัตโนมัติ)
+    const refNote = r => r.conv ? `1 ${r.conv.unit} = ${r.conv.per} กก. ≈ ${fmt0(r.conv.price)} บาท` : null;
+
+    // สูตร: นาที → rate(บาท/ชม.) × (นาที÷60) × คน | หน่วยนับ → rate × จำนวน × คน
     const expTotal = r => {
       const qty = r.unit === 'นาที' ? num(r.time) / 60 : num(r.time);
       return num(r.rate) * qty * (r.hasPeople ? num(r.people) : 1);
@@ -1148,7 +1170,7 @@ createApp({
       dbMode, dbLabel, forceLocal, showDbModal, sqlCopied, SQL, EMBED_URL, maskedKey,
       openDbModal, copySql, goOffline, reconnect,
       goodsRows, addGoods, removeGoods, rowTotal,
-      unitOpts, expenseRows, expTotal, setUnit, rateUnit, qtyUnit, liveExample, num,
+      unitOpts, expenseRows, expTotal, setUnit, rateUnit, qtyUnit, refNote, liveExample, num,
       totalWeight, totalAmount, totalExpense, netAmount, avgVal, disp,
       clock, toastState,
       history, search, filtered, expanded, toggle,
