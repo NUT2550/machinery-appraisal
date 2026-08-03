@@ -194,7 +194,6 @@ td.act{text-align:center}
 .eq-hint.conv{color:var(--amber)}
 @keyframes eqin{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 
-/* auto-filled weight (gross remainder) */
 .num-in.auto::placeholder{color:var(--green);opacity:.95}
 
 .hint.ref{display:flex;align-items:center;gap:5px;color:var(--amber);opacity:.95;font-weight:600;margin-top:5px}
@@ -389,6 +388,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     </div>
   </header>
 
+  <!-- ===== โซนนำทางด้วยแป้นพิมพ์ (ชื่อเครื่อง → นน.รวม → ตารางสินค้า → ตารางค่าใช้จ่าย) ===== -->
+  <div class="navzone" @keydown="onGridKey">
+
   <!-- ===== หัวเคส: ชื่อเครื่องจักร ===== -->
   <section class="card casecard rv" style="animation-delay:.02s" aria-label="ชื่อเครื่องจักร">
     <div class="case-top">
@@ -400,7 +402,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
       <div class="machine-field">
         <label class="mf-label" for="machineInput">ชื่อเครื่องจักรที่กำลังประเมิน</label>
-        <div class="mf-input-wrap">
+        <div class="mf-input-wrap" data-navrow>
           <svg class="lead" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-1.3-1.3a1 1 0 0 1-.3-.7v-1.8a1 1 0 0 1 .3-.7l1.3-1.3a.5.5 0 0 0 .1-.6l-1.4-2.4a.5.5 0 0 0-.6-.2l-1.7.7a1 1 0 0 1-.8 0l-1.5-.9a1 1 0 0 1-.5-.6L13.9 2a.5.5 0 0 0-.5-.4h-2.8a.5.5 0 0 0-.5.4l-.3 1.8a1 1 0 0 1-.5.6l-1.5.9a1 1 0 0 1-.8 0l-1.7-.7a.5.5 0 0 0-.6.2L3.3 7.2a.5.5 0 0 0 .1.6l1.3 1.3a1 1 0 0 1 .3.7v1.8a1 1 0 0 1-.3.7L3.4 13.6a.5.5 0 0 0-.1.6l1.4 2.4a.5.5 0 0 0 .6.2l1.7-.7a1 1 0 0 1 .8 0l1.5.9a1 1 0 0 1 .5.6l.3 1.8a.5.5 0 0 0 .5.4h2.8a.5.5 0 0 0 .5-.4l.3-1.8a1 1 0 0 1 .5-.6l1.5-.9a1 1 0 0 1 .8 0l1.7.7a.5.5 0 0 0 .6-.2l1.4-2.4a.5.5 0 0 0-.1-.6z"/></svg>
           <input id="machineInput" class="in machine-input" v-model="machineName" placeholder="เช่น เครื่องฉีดพลาสติก, เครื่อง CNC, เครื่องท่อผ้า…" autocomplete="off">
           <button v-if="machineName" class="mf-clear" @click="machineName=''" title="ล้างชื่อ">
@@ -445,7 +447,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     </div>
   </section>
 
-  <div class="cols rv" style="animation-delay:.18s" @keydown="onGridKey">
+  <div class="cols rv" style="animation-delay:.18s">
     <!-- ===== ส่วนที่ 1: สินค้า (รายรับ) ===== -->
     <section class="card">
       <div class="p-head">
@@ -454,8 +456,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <span class="chip cnt">{{ goodsRows.length }} แถว</span>
       </div>
 
-      <!-- น้ำหนักรวมจากตาชั่ง + ทอนอัตโนมัติ -->
-      <div class="gross-row">
+      <!-- น้ำหนักชั่งรวม + ทอนอัตโนมัติ -->
+      <div class="gross-row" data-navrow>
         <div class="gross-field">
           <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8"/><path d="M5 7l7-4 7 4"/><path d="M5 7l-3 7a3.4 3.4 0 0 0 6 0l-3-7z"/><path d="M19 7l-3 7a3.4 3.4 0 0 0 6 0l-3-7z"/></svg>
           <label for="grossInput">น้ำหนักชั่งรวม (กก.)</label>
@@ -582,10 +584,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <b>ลม (อ็อกซิเจน)</b> = <b>ท่อ</b> (140 บาท/ท่อ) · <b>แก๊ส (อะเซทิลีน)</b> = <b>กิโล</b> (30 บาท/กก.) — 1 ถังแก๊ส = 15 กก. ≈ 450 บาท · กรอกกี่โลระบบเทียบให้เองว่า ≈ กี่ถัง
         <br><b>อัตราเวลา = บาท/ชม.</b> · <b>เวลากรอกเป็นนาที</b> ระบบ ÷ 60 ให้เอง เช่น 700 บาท/ชม. × 30 นาที = 350 บาท
         <br>ค่าเริ่มต้น: แม็คโครทุบ 700/ชม. · ลม 140/ท่อ · แก๊ส 30/กก. · แกะด้วยเครื่องมือ 230/ชม. · ค่าแรง 66/ชม.
-        <br>นำทาง: <span class="keys"><span class="kbd">←</span><span class="kbd">→</span> ข้ามช่อง · <span class="kbd">↑</span><span class="kbd">↓</span> ข้ามแถว · <span class="kbd">Enter</span> ถัดไป/บันทึก · เปลี่ยนหน่วย: คลิก/แตะ หรือ <span class="kbd">Tab</span></span>
+        <br>นำทาง: <span class="keys"><span class="kbd">←</span><span class="kbd">→</span> ข้ามช่อง · <span class="kbd">↑</span><span class="kbd">↓</span> ข้ามแถว · <span class="kbd">Enter</span> ถัดไป/บันทึก · เริ่มที่ช่องชื่อเครื่อง · เปลี่ยนหน่วย: คลิก/แตะ หรือ <span class="kbd">Tab</span></span>
       </p>
     </section>
   </div>
+
+  </div><!-- /navzone -->
 
   <div class="spacer"></div>
 
@@ -820,7 +824,7 @@ const DB = {
   }
 };
 
-const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
+const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
@@ -866,13 +870,11 @@ createApp({
       { id: uid(), name: 'เหล็กเหนียว', weight: '', price: '' },
     ]);
     const goodsRows = ref(defaultGoods());
-    const grossInput = ref('');   // น้ำหนักชั่งรวมจากตาชั่ง (กก.)
+    const grossInput = ref('');
     const addGoods    = () => goodsRows.value.push({ id: uid(), name: '', weight: '', price: '' });
     const removeGoods = id => { goodsRows.value = goodsRows.value.filter(r => r.id !== id); };
 
-    // น้ำหนักที่กรอกเอง (ไม่รวมออโต้)
     const enteredSum = computed(() => goodsRows.value.reduce((s, r) => s + num(r.weight), 0));
-    // แถวว่างแถวสุดท้าย = รับส่วนต่างออโต้
     const autoRowId = computed(() => {
       if (num(grossInput.value) <= 0) return null;
       const empties = goodsRows.value.filter(r => num(r.weight) <= 0);
@@ -883,11 +885,9 @@ createApp({
       if (t <= 0) return 0;
       return Math.max(0, t - enteredSum.value);
     });
-    // น้ำหนักจริงที่ใช้คำนวณของแต่ละแถว (กรอกเอง หรือ ออโต้)
     const effW = r => num(r.weight) > 0 ? num(r.weight) : (r.id === autoRowId.value ? autoRemainder.value : 0);
     const rowTotal = r => effW(r) * num(r.price);
     const rowsWeightSum = computed(() => goodsRows.value.reduce((s, r) => s + effW(r), 0));
-    // น้ำหนักสุทธิของเคส: เชื่อตาชั่งถ้ากรอก รวมผลรวมแถวถ้าไม่กรอก
     const totalWeight = computed(() => num(grossInput.value) > 0 ? num(grossInput.value) : rowsWeightSum.value);
 
     const grossStatus = computed(() => {
@@ -926,8 +926,8 @@ createApp({
     const totalAmount  = computed(() => goodsRows.value.reduce((s, r) => s + rowTotal(r), 0));
     const totalExpense = computed(() => expenseRows.value.reduce((s, r) => s + expTotal(r), 0));
     const netAmount    = computed(() => totalAmount.value - totalExpense.value);
-    const avgVal       = computed(() => totalWeight.value > 0 ? netAmount.value / totalWeight.value : 0);      // ราคาซื้อ/กก.
-    const costPerKg    = computed(() => totalWeight.value > 0 ? totalExpense.value / totalWeight.value : 0);   // ต้นทุนย่อย/กก.
+    const avgVal       = computed(() => totalWeight.value > 0 ? netAmount.value / totalWeight.value : 0);
+    const costPerKg    = computed(() => totalWeight.value > 0 ? totalExpense.value / totalWeight.value : 0);
 
     /* ---------- ตัวอย่างคำนวณสด ---------- */
     const liveExample = computed(() => {
@@ -1032,7 +1032,6 @@ createApp({
         [r.machine || '', r.ref, fmtDate(r.createdAt), r.goods.map(g => g.name).join(' '), fmt(r.summary.net), fmt(r.summary.avg)]
           .join(' ').toLowerCase().includes(q));
     });
-    // ต้นทุนย่อย/กก. ของเคส (เคสเก่าที่ไม่มีฟิลด์นี้ → คำนวณย้อนหลังให้)
     const costKgOf = rec => (rec.summary.costKg != null)
       ? rec.summary.costKg
       : (rec.summary.totalWeight > 0 ? rec.summary.totalExpense / rec.summary.totalWeight : 0);
@@ -1044,7 +1043,6 @@ createApp({
       return `MK-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
     };
 
-    /* ---------- ล้างฟอร์ม (ใช้ทั้งปุ่มล้าง และหลังบันทึก) ---------- */
     function clearForm() {
       machineName.value = '';
       grossInput.value = '';
@@ -1067,7 +1065,6 @@ createApp({
       const rec = {
         id: uid(), ref: makeRef(now), createdAt: now.toISOString(),
         machine,
-        // น้ำหนักที่บันทึก = ค่าจริง (รวมส่วนออโต้ที่ทอนให้) เพื่อให้เปิดย้อนหลังแล้วครบถ้วน
         goods: goodsRows.value.map(r => ({ name: r.name || 'ไม่ระบุชื่อ', weight: round2(effW(r)), price: num(r.price), total: rowTotal(r) })),
         expenses: expenseRows.value.map(r => ({ method: r.method, unit: r.unit, rate: num(r.rate), time: num(r.time), people: r.hasPeople ? num(r.people) : null, total: expTotal(r) })),
         summary: {
@@ -1079,8 +1076,10 @@ createApp({
         const saved = await DB.create(rec);
         history.value = [saved, ...history.value];
         const tag = machine ? ` [${machine}]` : '';
-        clearForm();   // ✅ บันทึกสำเร็จ → ล้างฟอร์มพร้อมรับเคสถัดไป
+        clearForm();
         toast('ok', `บันทึก ${rec.ref}${tag} เรียบร้อย · ล้างฟอร์มแล้ว พร้อมรับเคสถัดไป`);
+        // โฟกัสกลับช่องชื่อเครื่องทันที พร้อมพิมพ์เคสถัดไปแบบไม่ต้องจับเมาส์
+        nextTick(() => { const m = document.getElementById('machineInput'); if (m) m.focus(); });
       } catch (e) {
         toast('warn', 'บันทึกไม่สำเร็จ: ' + e.message);
       }
@@ -1089,13 +1088,16 @@ createApp({
 
     /* ============================================================
      * ⌨️ GRID KEYBOARD NAVIGATION (ลูกศร + Enter)
+     *  รู้จักทั้งช่องในตาราง <tr> และช่องอิสระ (data-navrow)
+     *  เส้นทาง: ชื่อเครื่อง → นน.รวม → สินค้า → ค่าใช้จ่าย → บันทึก
      * ============================================================ */
     function buildGrid() {
-      const inputs = Array.from(document.querySelectorAll('.cols input'))
+      const inputs = Array.from(document.querySelectorAll('.navzone input'))
         .filter(i => i.offsetParent !== null && !i.disabled && !i.readOnly);
+      const rowOf = inp => inp.closest('tr') || inp.closest('[data-navrow]');
       const rowMap = new Map();
       inputs.forEach(inp => {
-        const tr = inp.closest('tr');
+        const tr = rowOf(inp);
         if (!tr) return;
         if (!rowMap.has(tr)) rowMap.set(tr, []);
         rowMap.get(tr).push(inp);
@@ -1105,7 +1107,8 @@ createApp({
       const flat = [];
       const byRC = new Map();
       inputs.forEach(inp => {
-        const tr = inp.closest('tr');
+        const tr = rowOf(inp);
+        if (!tr) return;
         const ri = rows.indexOf(tr);
         const ci = rowMap.get(tr).indexOf(inp);
         const idx = flat.length;
@@ -1135,7 +1138,7 @@ createApp({
         const g = buildGrid();
         const i = g.flat.findIndex(c => c.el === el);
         if (i >= 0 && i < g.flat.length - 1) focusCell(g.flat[i + 1].el);
-        else saveRecord();
+        else if (i === g.flat.length - 1) saveRecord();
         return;
       }
 
@@ -1178,7 +1181,7 @@ createApp({
 
     function loadRecord(rec) {
       machineName.value = rec.machine || '';
-      grossInput.value = '';   // เคสที่โหลดมีน้ำหนักครบทุกแถวแล้ว ไม่ต้องทอน
+      grossInput.value = '';
       goodsRows.value = rec.goods.map(g => ({ id: uid(), name: g.name, weight: g.weight || '', price: g.price || '' }));
       expenseRows.value = buildExp().map(r => {
         const s = rec.expenses.find(e => e.method === r.method);
