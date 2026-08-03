@@ -60,7 +60,7 @@ body::before{
   -webkit-mask-image:radial-gradient(ellipse at 50% -10%, black 15%, transparent 72%);
   mask-image:radial-gradient(ellipse at 50% -10%, black 15%, transparent 72%);
 }
-body,.card,.stat,.tb th,.tb td,.tb tfoot td,.in,.dbbadge,.iconbtn,.actionbar,.search input,.sqlbox,.sqlbox pre,.sql-head,.dlist li,.chip,.mark,.addrow,.modal,.unit-select,.livecalc,.casecard,.suggest-chip,.case-badge{
+body,.card,.stat,.tb th,.tb td,.tb tfoot td,.in,.dbbadge,.iconbtn,.actionbar,.search input,.sqlbox,.sqlbox pre,.sql-head,.dlist li,.chip,.mark,.addrow,.modal,.unit-select,.livecalc,.casecard,.suggest-chip,.case-badge,.gross-row{
   transition:background-color .3s,border-color .3s,color .3s;
 }
 .topline{height:3px;background:linear-gradient(90deg,var(--blue),var(--green));background-size:200% 100%;animation:flow 8s linear infinite}
@@ -96,7 +96,7 @@ h1{font:600 1.25rem 'Kanit';line-height:1.3}
 @keyframes tin{from{transform:rotate(-90deg) scale(.3);opacity:0}to{transform:none;opacity:1}}
 .ticon{animation:tin .35s ease}
 
-/* ---------- Case header (ชื่อเครื่องจักร) ---------- */
+/* ---------- Case header ---------- */
 .casecard{position:relative;overflow:hidden}
 .casecard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--green))}
 .casecard:hover{box-shadow:var(--sh2)}
@@ -122,15 +122,16 @@ h1{font:600 1.25rem 'Kanit';line-height:1.3}
 .suggest-chip:active{transform:translateY(0) scale(.95)}
 .suggest-chip.sel{color:#fff;background:var(--blue);border-color:var(--blue);box-shadow:0 3px 10px var(--glow)}
 
-/* ---------- Summary ---------- */
-.board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+/* ---------- Summary (4 cards) ---------- */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:1100px){.board{grid-template-columns:repeat(2,1fr)}}
 .stat{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:10px;padding:14px 18px 13px;box-shadow:var(--sh);transition:box-shadow .2s, transform .2s, background-color .3s, border-color .3s}
 .stat:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
-.stat.w{--c:var(--amber)} .stat.net{--c:var(--green)} .stat.net.neg{--c:var(--red)} .stat.avg{--c:var(--blue)}
+.stat.w{--c:var(--amber)} .stat.net{--c:var(--green)} .stat.net.neg{--c:var(--red)} .stat.avg{--c:var(--blue)} .stat.cost{--c:var(--red)}
 .stat .lb{font-size:.8rem;color:var(--mut);font-weight:600}
-.stat .vl{font:600 clamp(1.45rem,3vw,1.95rem)/1.25 'Kanit';font-variant-numeric:tabular-nums;color:var(--c);margin-top:2px}
+.stat .vl{font:600 clamp(1.35rem,2.6vw,1.85rem)/1.25 'Kanit';font-variant-numeric:tabular-nums;color:var(--c);margin-top:2px}
 .stat .vl small{font-size:.5em;color:var(--mut);font-weight:500;margin-left:4px}
-.stat .sb{font-size:.74rem;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .sb{font-size:.72rem;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
 
 /* ---------- Card ---------- */
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--sh);margin-bottom:16px}
@@ -148,6 +149,16 @@ h1{font:600 1.25rem 'Kanit';line-height:1.3}
 [data-theme="dark"] .chip.out{background:rgba(239,113,104,.12);border-color:rgba(239,113,104,.35)}
 .chip.cnt{background:var(--soft);color:var(--mut);border:1px solid var(--line);margin-left:auto}
 
+/* ---------- Gross weight row ---------- */
+.gross-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;border:1px dashed var(--line2);border-radius:9px;background:var(--soft)}
+.gross-field{display:flex;align-items:center;gap:9px}
+.gross-field svg{color:var(--amber);flex-shrink:0}
+.gross-field label{font:600 .78rem 'Sarabun';color:var(--mut);white-space:nowrap}
+.gross-field .in{width:120px}
+.gross-status{font:600 .74rem 'Sarabun';color:var(--mut);display:flex;align-items:center;gap:6px;flex-wrap:wrap;animation:eqin .3s ease}
+.gross-status.ok{color:var(--green)}
+.gross-status.warn{color:var(--amber)}
+
 /* ---------- Table ---------- */
 table.tb{width:100%;border-collapse:collapse;font-size:.92rem}
 .tb th{font:600 .74rem 'Sarabun';color:var(--mut);text-align:left;padding:9px 10px;background:var(--soft);border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.3px}
@@ -162,21 +173,18 @@ table.tb{width:100%;border-collapse:collapse;font-size:.92rem}
 td.act{text-align:center}
 .th-sub{display:block;font:500 .66rem 'Sarabun';color:var(--mut);opacity:.85;margin-top:1px;letter-spacing:.2px}
 
-/* fixed-layout tables + column widths */
 .in-tb,.exp-tb{table-layout:fixed}
 .in-tb .c-name{width:30%} .in-tb .c-w{width:22%} .in-tb .c-p{width:22%} .in-tb .c-sum{width:18%} .in-tb .c-act{width:8%}
 .exp-tb .c-method{width:33%} .exp-tb .c-rate{width:16%} .exp-tb .c-time{width:18%} .exp-tb .c-ppl{width:10%} .exp-tb .c-sum{width:23%}
 .exp-tb th{white-space:normal;line-height:1.3}
 .mname{font-weight:600;line-height:1.3;display:block}
 
-/* per-method unit picker */
 .us-wrap{position:relative;display:inline-block;margin-top:6px}
 .us-wrap::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--mut);pointer-events:none;line-height:1}
 .unit-select{appearance:none;-webkit-appearance:none;font:600 .7rem 'Kanit';color:var(--ink);background:var(--soft);border:1px solid var(--line2);border-radius:6px;padding:3px 22px 3px 9px;cursor:pointer;line-height:1.2}
 .unit-select:hover{border-color:var(--amber)}
 .unit-select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px color-mix(in srgb,var(--amber) 18%,transparent)}
 
-/* quantity input-group with live unit suffix + equivalence hints */
 .qtygrp{position:relative;width:100%}
 .qtygrp .in{padding-right:42px}
 .qunit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:600 .66rem 'Kanit';color:var(--mut);pointer-events:none;letter-spacing:.2px}
@@ -186,11 +194,12 @@ td.act{text-align:center}
 .eq-hint.conv{color:var(--amber)}
 @keyframes eqin{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 
-/* market-reference note under method name */
+/* auto-filled weight (gross remainder) */
+.num-in.auto::placeholder{color:var(--green);opacity:.95}
+
 .hint.ref{display:flex;align-items:center;gap:5px;color:var(--amber);opacity:.95;font-weight:600;margin-top:5px}
 .hint.ref svg{flex-shrink:0;opacity:.85}
 
-/* active-row feedback */
 .in-tb tbody tr:focus-within{background:color-mix(in srgb, var(--green) 7%, transparent)}
 .in-tb tbody tr:focus-within td:first-child{box-shadow:inset 3px 0 0 var(--green)}
 .exp-tb tbody tr:focus-within{background:color-mix(in srgb, var(--red) 7%, transparent)}
@@ -206,18 +215,15 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .dash{color:var(--mut);opacity:.6}
 .hint{font-size:.7rem;color:var(--mut);margin-top:4px;display:block;line-height:1.35}
 
-/* keycap chips */
 .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;background:var(--soft);font:600 .68rem 'Kanit';color:var(--mut);line-height:1;vertical-align:middle}
 .keys{display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap}
 
-/* live calc example box */
 .livecalc{margin-top:11px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 13px;border:1px dashed var(--line2);border-radius:9px;background:var(--soft);font-size:.78rem;color:var(--mut)}
 .livecalc .lc-tag{font:600 .68rem 'Sarabun';color:var(--blue);background:var(--glow);border:1px solid color-mix(in srgb,var(--blue) 30%,transparent);padding:2px 9px;border-radius:99px;letter-spacing:.3px;white-space:nowrap}
 .livecalc .lc-eq{font:600 .82rem 'Kanit';font-variant-numeric:tabular-nums;color:var(--ink)}
 .livecalc .lc-res{font:700 .92rem 'Kanit';font-variant-numeric:tabular-nums;color:var(--green)}
 
-/* history machine cell + cost/kg */
-.mcell{display:inline-block;max-width:178px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;font-weight:600}
+.mcell{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;font-weight:600}
 .costkg{font-weight:700}
 .case-name-head{display:flex;align-items:center;gap:8px;font:600 .95rem 'Kanit';color:var(--blue);margin-bottom:11px;padding-bottom:9px;border-bottom:1px dashed var(--line)}
 .case-name-head svg{flex-shrink:0;color:var(--blue)}
@@ -237,7 +243,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .rows-enter-from{opacity:0;transform:translateY(-6px)}
 .rows-leave-to{opacity:0}
 
-/* ---------- Action bar ---------- */
 .actionbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:16px 0;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px}
 .actionbar .note{margin-right:auto;font-size:.76rem;color:var(--mut);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:7px;border-radius:8px;padding:10px 20px;font:600 .93rem 'Sarabun';cursor:pointer;border:1px solid transparent;transition:.15s}
@@ -252,7 +257,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 [data-theme="dark"] .btn.dgho:hover{background:rgba(239,113,104,.1)}
 .btn:disabled{opacity:.6;cursor:wait;transform:none}
 
-/* ---------- History ---------- */
 .search{position:relative;flex:1;max-width:320px;min-width:190px;margin-left:auto}
 .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none}
 .search input{width:100%;padding:8px 12px 8px 33px;border:1px solid var(--line2);border-radius:8px;background:var(--inbg);color:var(--ink);font:500 .88rem 'Sarabun';transition:border-color .15s, box-shadow .15s}
@@ -278,13 +282,13 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .dsum.pos{border-color:#bbf0cd;color:var(--green)}
 .dsum.neg{border-color:#fecaca;color:var(--red)}
 .dsum.avg{border-color:color-mix(in srgb,var(--blue) 45%,transparent);color:var(--blue);font-weight:600}
+.dsum.cost{border-color:color-mix(in srgb,var(--red) 45%,transparent);color:var(--red);font-weight:600}
 [data-theme="dark"] .dsum.in,[data-theme="dark"] .dsum.pos{border-color:rgba(67,201,131,.4)}
 [data-theme="dark"] .dsum.out,[data-theme="dark"] .dsum.neg{border-color:rgba(239,113,104,.4)}
 .empty{padding:34px 16px;text-align:center;color:var(--mut)}
 .empty svg{opacity:.35;margin-bottom:8px}
 .empty p{font-size:.86rem}
 
-/* ---------- Modal ---------- */
 .overlay{position:fixed;inset:0;background:rgba(8,12,17,.55);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px;animation:fade .2s;backdrop-filter:blur(2px)}
 @keyframes fade{from{opacity:0}}
 .modal{background:var(--card);border:1px solid var(--line);border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pop .28s cubic-bezier(.2,1.1,.3,1)}
@@ -312,13 +316,11 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .m-foot{display:flex;gap:8px;align-items:center;padding:14px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
 .m-foot .sp{flex:1}
 
-/* ---------- Toast ---------- */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:11px 20px;border-radius:99px;font:500 .88rem 'Sarabun';opacity:0;pointer-events:none;transition:.3s;z-index:120;display:flex;gap:8px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok svg{color:#4ade80}
 .toast.warn svg{color:#fbbf24}
 
-/* ---------- Responsive ---------- */
 @media(max-width:1000px){.cols{grid-template-columns:1fr}}
 @media(max-width:720px){
   .board{grid-template-columns:1fr}
@@ -326,6 +328,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
   .case-top{align-items:stretch}
   .case-ico{align-self:flex-start}
   .case-badge{align-self:flex-start}
+  .gross-row{align-items:flex-start;flex-direction:column;gap:8px}
   .tb thead{display:none}
   .tb,.tb tbody,.tb tfoot,.tb tr,.tb td{display:block;width:100%}
   .in-tb,.exp-tb{table-layout:auto}
@@ -366,7 +369,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       </div>
       <div>
         <h1>ระบบประเมินราคารับซื้อเครื่องจักร</h1>
-        <p>คำนวณต้นทุนเหมาคัน · ลม=ท่อ · แก๊ส=กิโล (เทียบถังให้) · เวลา=นาที (÷60 ให้)</p>
+        <p>คำนวณต้นทุนเหมาคัน · ใส่น้ำหนักรวมแล้วทอนช่องว่างให้เอง · บันทึกแล้วล้างฟอร์มอัตโนมัติ</p>
       </div>
     </div>
     <div class="hright">
@@ -418,12 +421,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     </div>
   </section>
 
-  <!-- ===== สรุปผลลัพธ์ ===== -->
+  <!-- ===== สรุปผลลัพธ์ (4 การ์ด) ===== -->
   <section class="board rv" style="animation-delay:.08s" aria-label="สรุปผลลัพธ์">
     <div class="stat w">
       <div class="lb">น้ำหนักสินค้าสุทธิ</div>
       <div class="vl">{{ fmt(disp.weight) }}<small>กก.</small></div>
-      <div class="sb">จากสินค้า {{ goodsRows.length }} รายการ</div>
+      <div class="sb">{{ num(grossInput) > 0 ? 'จากตาชั่ง (นน.รวม)' : 'ผลรวมแต่ละรายการ' }}</div>
     </div>
     <div class="stat net" :class="{ neg: netAmount < 0 }">
       <div class="lb">จำนวนเงินสุทธิหลังหักค่าใช้จ่าย</div>
@@ -431,13 +434,17 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
       <div class="sb">รายรับ {{ fmt(disp.income) }} − รายจ่าย {{ fmt(disp.expense) }}</div>
     </div>
     <div class="stat avg">
-      <div class="lb">ต้นทุนรับซื้อ / กก.</div>
+      <div class="lb">ราคาซื้อ / กก.</div>
       <div class="vl">{{ totalWeight > 0 ? fmt(disp.avg) : '—' }}<small>บาท/กก.</small></div>
-      <div class="sb">สุทธิ ÷ น้ำหนัก · ใช้เทียบราคาเหล็กปัจจุบัน</div>
+      <div class="sb">เงินสุทธิ ÷ น้ำหนัก · ราคาที่จ่ายจริง</div>
+    </div>
+    <div class="stat cost">
+      <div class="lb">ต้นทุนย่อย / กก.</div>
+      <div class="vl">{{ totalWeight > 0 ? fmt(disp.costKg) : '—' }}<small>บาท/กก.</small></div>
+      <div class="sb">ค่าใช้จ่ายทั้งหมด ÷ น้ำหนัก · ค่าแรง+เครื่องมือต่อกิโล</div>
     </div>
   </section>
 
-  <!-- @keydown = ลูกศรนำทาง + Enter ไปช่องถัดไป (ช่องสุดท้าย = บันทึก) -->
   <div class="cols rv" style="animation-delay:.18s" @keydown="onGridKey">
     <!-- ===== ส่วนที่ 1: สินค้า (รายรับ) ===== -->
     <section class="card">
@@ -445,6 +452,16 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <h2><span class="dot g"></span>ส่วนที่ 1 · ประเมินสินค้า</h2>
         <span class="chip in">รายรับ</span>
         <span class="chip cnt">{{ goodsRows.length }} แถว</span>
+      </div>
+
+      <!-- น้ำหนักรวมจากตาชั่ง + ทอนอัตโนมัติ -->
+      <div class="gross-row">
+        <div class="gross-field">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8"/><path d="M5 7l7-4 7 4"/><path d="M5 7l-3 7a3.4 3.4 0 0 0 6 0l-3-7z"/><path d="M19 7l-3 7a3.4 3.4 0 0 0 6 0l-3-7z"/></svg>
+          <label for="grossInput">น้ำหนักชั่งรวม (กก.)</label>
+          <input id="grossInput" class="in num-in" type="number" min="0" step="any" inputmode="decimal" v-model.number="grossInput" placeholder="—">
+        </div>
+        <div class="gross-status" :class="grossStatus.type">{{ grossStatus.text }}</div>
       </div>
 
       <table class="tb in-tb">
@@ -460,7 +477,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <transition-group name="rows" tag="tbody">
           <tr v-for="r in goodsRows" :key="r.id">
             <td class="c-name" data-label="รายการ"><input class="in" v-model="r.name" placeholder="ชื่อรายการ"></td>
-            <td class="c-w" data-label="น้ำหนัก (กก.)"><input class="in num-in" type="number" min="0" step="any" inputmode="decimal" v-model.number="r.weight" placeholder="0.00"></td>
+            <td class="c-w" data-label="น้ำหนัก (กก.)">
+              <input class="in num-in" :class="{ auto: r.id===autoRowId && autoRemainder>0 }" type="number" min="0" step="any" inputmode="decimal" v-model.number="r.weight" :placeholder="r.id===autoRowId && autoRemainder>0 ? fmt(autoRemainder) : '0.00'">
+              <span v-if="r.id===autoRowId && autoRemainder>0" class="eq-hint">ออโต้ = รวม − ช่องอื่น</span>
+            </td>
             <td class="c-p" data-label="ราคาขายส่ง (บาท/กก.)"><input class="in num-in" type="number" min="0" step="any" inputmode="decimal" v-model.number="r.price" placeholder="0.00"></td>
             <td class="c-sum num money" data-label="รวมเป็นเงิน">{{ fmt(rowTotal(r)) }}</td>
             <td class="c-act act no-label" data-label="">
@@ -474,7 +494,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
           <tr>
             <td class="lbl" colspan="2" data-label="สรุป">รวมน้ำหนักสินค้าทั้งหมด</td>
             <td class="hide-m"></td>
-            <td class="num money" data-label="น้ำหนัก (กก.)">{{ fmt(totalWeight) }}</td>
+            <td class="num money" data-label="น้ำหนัก (กก.)">{{ fmt(rowsWeightSum) }}</td>
             <td class="hide-m"></td>
           </tr>
           <tr>
@@ -489,7 +509,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         เพิ่มรายการสินค้า
       </button>
-      <p class="fnote">สูตร: <span class="fx">รวมเป็นเงิน = น้ำหนัก (กก.) × ราคาขายส่ง (บาท/กก.)</span></p>
+      <p class="fnote">สูตร: <span class="fx">รวมเป็นเงิน = น้ำหนัก (กก.) × ราคาขายส่ง (บาท/กก.)</span> · ใส่น้ำหนักชั่งรวมด้านบน → แถวที่เว้นว่างจะถูกทอนให้เอง (รวม − ช่องที่กรอก)</p>
     </section>
 
     <!-- ===== ส่วนที่ 2: ค่าใช้จ่ายการย่อย (รายจ่าย) ===== -->
@@ -549,7 +569,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
         </tfoot>
       </table>
 
-      <!-- live calc example: ผูกกับค่าจริงในฟอร์ม -->
       <div class="livecalc" v-if="liveExample">
         <span class="lc-tag">ตัวอย่างสด</span>
         <span class="lc-eq">{{ fmt(liveExample.rate) }} บาท/ชม. × {{ fmt(liveExample.mins) }} นาที</span>
@@ -574,7 +593,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
   <div class="actionbar rv" style="animation-delay:.28s">
     <span class="note">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }}{{ machineName ? ' · เคส: ' + machineName : '' }}
+      บันทึกลง: {{ dbMode === 'cloud' ? 'Supabase (คลาวด์)' : 'เบราว์เซอร์นี้ (localStorage)' }}{{ machineName ? ' · เคส: ' + machineName : '' }} · บันทึกแล้วล้างฟอร์มอัตโนมัติ
       <span class="keys">· <span class="kbd">←</span><span class="kbd">→</span><span class="kbd">↑</span><span class="kbd">↓</span> นำทาง · <span class="kbd">Enter</span> ถัดไป/บันทึก</span>
     </span>
     <button class="btn gho" @click="resetForm">ล้างฟอร์ม</button>
@@ -595,7 +614,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
     </div>
     <div class="dbnote">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-      <span>พบ <b>{{ filtered.length }}</b> รายการ · ข้อมูลเก็บใน <b>{{ dbMode === 'cloud' ? 'Supabase (ซิงก์ทุกเครื่อง)' : 'เบราว์เซอร์นี้ (localStorage)' }}</b> · แตะเลขที่เพื่อดูรายละเอียด + ต้นทุน/กก.</span>
+      <span>พบ <b>{{ filtered.length }}</b> รายการ · <b>{{ dbMode === 'cloud' ? 'Supabase (ซิงก์ทุกเครื่อง)' : 'localStorage' }}</b> · แตะเลขที่เพื่อดูรายละเอียด · ราคาซื้อ = เงินสุทธิ/กก. · ต้นทุนย่อย = ค่าใช้จ่าย/กก.</span>
     </div>
 
     <table class="tb" v-if="filtered.length">
@@ -606,7 +625,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
           <th>เลขที่บันทึก</th>
           <th class="num">น้ำหนัก (กก.)</th>
           <th class="num">เงินสุทธิ (บาท)</th>
-          <th class="num">ต้นทุน/กก.</th>
+          <th class="num">ราคาซื้อ/กก.</th>
+          <th class="num">ต้นทุนย่อย/กก.</th>
           <th style="width:92px">การจัดการ</th>
         </tr>
       </thead>
@@ -621,7 +641,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
             </td>
             <td class="num money" data-label="น้ำหนัก (กก.)">{{ fmt(rec.summary.totalWeight) }}</td>
             <td class="num money" :class="rec.summary.net >= 0 ? 'pos' : 'neg'" data-label="เงินสุทธิ (บาท)">{{ fmt(rec.summary.net) }}</td>
-            <td class="num money costkg" data-label="ต้นทุน/กก. (บาท)">{{ rec.summary.totalWeight > 0 ? fmt(rec.summary.avg) : '—' }}</td>
+            <td class="num money" data-label="ราคาซื้อ/กก. (บาท)">{{ rec.summary.totalWeight > 0 ? fmt(rec.summary.avg) : '—' }}</td>
+            <td class="num money costkg" data-label="ต้นทุนย่อย/กก. (บาท)">{{ rec.summary.totalWeight > 0 ? fmt(costKgOf(rec)) : '—' }}</td>
             <td class="act no-label" data-label="">
               <button class="ib" @click="loadRecord(rec)" title="โหลดข้อมูลเข้าฟอร์ม">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg>
@@ -633,7 +654,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
             </td>
           </tr>
           <tr v-if="expanded === rec.id" class="detail">
-            <td colspan="7">
+            <td colspan="8">
               <div class="case-name-head" v-if="rec.machine">
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></svg>
                 {{ rec.machine }}
@@ -662,7 +683,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
                 <span class="dsum in">รายรับ {{ fmt(rec.summary.totalAmount) }} บาท</span>
                 <span class="dsum out">รายจ่าย {{ fmt(rec.summary.totalExpense) }} บาท</span>
                 <span class="dsum" :class="rec.summary.net >= 0 ? 'pos' : 'neg'">สุทธิ {{ fmt(rec.summary.net) }} บาท</span>
-                <span class="dsum avg">ต้นทุน {{ rec.summary.totalWeight > 0 ? fmt(rec.summary.avg) : '—' }} บาท/กก.</span>
+                <span class="dsum avg">ราคาซื้อ {{ rec.summary.totalWeight > 0 ? fmt(rec.summary.avg) : '—' }} บาท/กก.</span>
+                <span class="dsum cost">ต้นทุนย่อย {{ rec.summary.totalWeight > 0 ? fmt(costKgOf(rec)) : '—' }} บาท/กก.</span>
               </div>
             </td>
           </tr>
@@ -802,6 +824,7 @@ const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+const round2 = v => Math.round(v * 100) / 100;
 const fmt  = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmt0 = n => (Number.isFinite(n) ? n : 0).toLocaleString('th-TH');
 const fmtDate = iso => new Date(iso).toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -830,34 +853,58 @@ createApp({
       localStorage.setItem('machinery_theme', v);
     }, { immediate: true });
 
-    /* ---------- หัวเคส: ชื่อเครื่องจักร (ทางลัดเหลือเฉพาะที่ใช้จริง) ---------- */
+    /* ---------- หัวเคส ---------- */
     const machineName = ref('');
     const machineSuggestions = ['เครื่องฉีดพลาสติก','เครื่อง CNC','เครื่องท่อผ้า'];
     const machineActive = n => machineName.value.trim() === n;
     const pickMachine = n => { machineName.value = n; };
 
-    /* ---------- ส่วนที่ 1 ---------- */
+    /* ---------- ส่วนที่ 1 + น้ำหนักชั่งรวม ---------- */
     const defaultGoods = () => ([
       { id: uid(), name: 'หล่อใหญ่',   weight: '', price: '' },
       { id: uid(), name: 'หล่อเล็ก',   weight: '', price: '' },
       { id: uid(), name: 'เหล็กเหนียว', weight: '', price: '' },
     ]);
     const goodsRows = ref(defaultGoods());
+    const grossInput = ref('');   // น้ำหนักชั่งรวมจากตาชั่ง (กก.)
     const addGoods    = () => goodsRows.value.push({ id: uid(), name: '', weight: '', price: '' });
     const removeGoods = id => { goodsRows.value = goodsRows.value.filter(r => r.id !== id); };
-    const rowTotal = r => num(r.weight) * num(r.price);
 
-    /* ============================================================
-     * ส่วนที่ 2 — แยกหน่วยตามจริง:
-     *  · 'นาที' → อัตรา = บาท/ชม. , จำนวน = นาที , ÷60 เอง
-     *  · 'ท่อ'  → ลม (อ็อกซิเจน) 140 บาท/ท่อ
-     *  · 'กิโล' → แก๊ส (อะเซทิลีน) 30 บาท/กก. + เทียบถังให้ (1 ถัง=15กก.=450฿)
-     *  · หน่วยนับอื่น → อัตรา = บาท/หน่วย , ไม่หาร
-     * ============================================================ */
+    // น้ำหนักที่กรอกเอง (ไม่รวมออโต้)
+    const enteredSum = computed(() => goodsRows.value.reduce((s, r) => s + num(r.weight), 0));
+    // แถวว่างแถวสุดท้าย = รับส่วนต่างออโต้
+    const autoRowId = computed(() => {
+      if (num(grossInput.value) <= 0) return null;
+      const empties = goodsRows.value.filter(r => num(r.weight) <= 0);
+      return empties.length ? empties[empties.length - 1].id : null;
+    });
+    const autoRemainder = computed(() => {
+      const t = num(grossInput.value);
+      if (t <= 0) return 0;
+      return Math.max(0, t - enteredSum.value);
+    });
+    // น้ำหนักจริงที่ใช้คำนวณของแต่ละแถว (กรอกเอง หรือ ออโต้)
+    const effW = r => num(r.weight) > 0 ? num(r.weight) : (r.id === autoRowId.value ? autoRemainder.value : 0);
+    const rowTotal = r => effW(r) * num(r.price);
+    const rowsWeightSum = computed(() => goodsRows.value.reduce((s, r) => s + effW(r), 0));
+    // น้ำหนักสุทธิของเคส: เชื่อตาชั่งถ้ากรอก รวมผลรวมแถวถ้าไม่กรอก
+    const totalWeight = computed(() => num(grossInput.value) > 0 ? num(grossInput.value) : rowsWeightSum.value);
+
+    const grossStatus = computed(() => {
+      const t = num(grossInput.value);
+      if (t <= 0) return { type: '', text: 'เว้นว่าง = ใช้ผลรวมของแต่ละแถว' };
+      if (enteredSum.value > t + 0.005) return { type: 'warn', text: `ผลรวมช่อง (${fmt(enteredSum.value)}) เกินน้ำหนักชั่งรวม ${fmt(t)} กก.` };
+      if (autoRowId.value) {
+        const row = goodsRows.value.find(r => r.id === autoRowId.value);
+        return { type: 'ok', text: `ออโต้ “${(row && row.name) || 'แถวว่าง'}” = ${fmt(autoRemainder.value)} กก.` };
+      }
+      if (Math.abs(enteredSum.value - t) <= 0.005) return { type: 'ok', text: 'น้ำหนักชั่งรวมตรงกับผลรวมแถว ✓' };
+      return { type: 'warn', text: `ผลรวมแถว ${fmt(enteredSum.value)} กก. · เหลือยังไม่ได้แจกจ่าย ${fmt(t - enteredSum.value)} กก.` };
+    });
+
+    /* ---------- ส่วนที่ 2 ---------- */
     const unitOpts = ['นาที', 'ท่อ', 'กิโล', 'ถัง', 'ชุด', 'วัน', 'เหมา'];
-
     const gasConv = { base: 'กิโล', per: 15, unit: 'ถัง', price: 450 };
-
     const buildExp = () => ([
       { id: uid(), method: 'แม็คโครทุบ',        unit: 'นาที', rate: 700,                       time: '', people: '', hasPeople: false },
       { id: uid(), method: 'ลม (อ็อกซิเจน)',     unit: 'ท่อ',  rate: 140,                       time: '', people: '', hasPeople: false },
@@ -869,20 +916,18 @@ createApp({
 
     const rateUnit = r => r.unit === 'นาที' ? 'บาท/ชม.' : 'บาท/' + r.unit;
     const qtyUnit  = r => r.unit === 'นาที' ? 'นาที'   : r.unit;
-
     const refNote = r => r.conv ? `1 ${r.conv.unit} = ${r.conv.per} กก. ≈ ${fmt0(r.conv.price)} บาท` : null;
-
     const expTotal = r => {
       const qty = r.unit === 'นาที' ? num(r.time) / 60 : num(r.time);
       return num(r.rate) * qty * (r.hasPeople ? num(r.people) : 1);
     };
 
     /* ---------- สรุปผล ---------- */
-    const totalWeight  = computed(() => goodsRows.value.reduce((s, r) => s + num(r.weight), 0));
     const totalAmount  = computed(() => goodsRows.value.reduce((s, r) => s + rowTotal(r), 0));
     const totalExpense = computed(() => expenseRows.value.reduce((s, r) => s + expTotal(r), 0));
     const netAmount    = computed(() => totalAmount.value - totalExpense.value);
-    const avgVal       = computed(() => totalWeight.value > 0 ? netAmount.value / totalWeight.value : 0);
+    const avgVal       = computed(() => totalWeight.value > 0 ? netAmount.value / totalWeight.value : 0);      // ราคาซื้อ/กก.
+    const costPerKg    = computed(() => totalWeight.value > 0 ? totalExpense.value / totalWeight.value : 0);   // ต้นทุนย่อย/กก.
 
     /* ---------- ตัวอย่างคำนวณสด ---------- */
     const liveExample = computed(() => {
@@ -894,7 +939,7 @@ createApp({
     });
 
     /* ---------- ตัวเลขวิ่ง ---------- */
-    const disp = reactive({ weight: 0, income: 0, expense: 0, net: 0, avg: 0 });
+    const disp = reactive({ weight: 0, income: 0, expense: 0, net: 0, avg: 0, costKg: 0 });
     const raf = {};
     const tween = (k, to) => {
       cancelAnimationFrame(raf[k]);
@@ -906,8 +951,8 @@ createApp({
       };
       raf[k] = requestAnimationFrame(step);
     };
-    watch([totalWeight, totalAmount, totalExpense, netAmount, avgVal],
-      ([w, i, x, n, a]) => { tween('weight', w); tween('income', i); tween('expense', x); tween('net', n); tween('avg', a); });
+    watch([totalWeight, totalAmount, totalExpense, netAmount, avgVal, costPerKg],
+      ([w, i, x, n, a, c]) => { tween('weight', w); tween('income', i); tween('expense', x); tween('net', n); tween('avg', a); tween('costKg', c); });
 
     /* ---------- นาฬิกา ---------- */
     const clock = ref('');
@@ -919,10 +964,10 @@ createApp({
     let tTimer;
     const toast = (type, msg) => {
       toastState.show = true; toastState.type = type; toastState.msg = msg;
-      clearTimeout(tTimer); tTimer = setTimeout(() => toastState.show = false, 3000);
+      clearTimeout(tTimer); tTimer = setTimeout(() => toastState.show = false, 3200);
     };
 
-    /* ---------- ฐานข้อมูล: auto-connect ---------- */
+    /* ---------- ฐานข้อมูล ---------- */
     const dbMode = ref('connecting');
     const forceLocal = ref(false);
     const showDbModal = ref(false);
@@ -987,6 +1032,10 @@ createApp({
         [r.machine || '', r.ref, fmtDate(r.createdAt), r.goods.map(g => g.name).join(' '), fmt(r.summary.net), fmt(r.summary.avg)]
           .join(' ').toLowerCase().includes(q));
     });
+    // ต้นทุนย่อย/กก. ของเคส (เคสเก่าที่ไม่มีฟิลด์นี้ → คำนวณย้อนหลังให้)
+    const costKgOf = rec => (rec.summary.costKg != null)
+      ? rec.summary.costKg
+      : (rec.summary.totalWeight > 0 ? rec.summary.totalExpense / rec.summary.totalWeight : 0);
 
     const saving = ref(false);
     const saveBtn = ref(null);
@@ -994,6 +1043,18 @@ createApp({
       const p = n => String(n).padStart(2, '0');
       return `MK-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
     };
+
+    /* ---------- ล้างฟอร์ม (ใช้ทั้งปุ่มล้าง และหลังบันทึก) ---------- */
+    function clearForm() {
+      machineName.value = '';
+      grossInput.value = '';
+      goodsRows.value = defaultGoods();
+      expenseRows.value = buildExp();
+    }
+    function resetForm() {
+      clearForm();
+      toast('warn', 'ล้างฟอร์มกลับสู่ค่าเริ่มต้นแล้ว');
+    }
 
     async function saveRecord() {
       if (totalWeight.value <= 0 && totalAmount.value <= 0 && totalExpense.value <= 0) {
@@ -1006,15 +1067,20 @@ createApp({
       const rec = {
         id: uid(), ref: makeRef(now), createdAt: now.toISOString(),
         machine,
-        goods: goodsRows.value.map(r => ({ name: r.name || 'ไม่ระบุชื่อ', weight: num(r.weight), price: num(r.price), total: rowTotal(r) })),
+        // น้ำหนักที่บันทึก = ค่าจริง (รวมส่วนออโต้ที่ทอนให้) เพื่อให้เปิดย้อนหลังแล้วครบถ้วน
+        goods: goodsRows.value.map(r => ({ name: r.name || 'ไม่ระบุชื่อ', weight: round2(effW(r)), price: num(r.price), total: rowTotal(r) })),
         expenses: expenseRows.value.map(r => ({ method: r.method, unit: r.unit, rate: num(r.rate), time: num(r.time), people: r.hasPeople ? num(r.people) : null, total: expTotal(r) })),
-        summary: { totalWeight: totalWeight.value, totalAmount: totalAmount.value, totalExpense: totalExpense.value, net: netAmount.value, avg: avgVal.value },
+        summary: {
+          totalWeight: totalWeight.value, totalAmount: totalAmount.value, totalExpense: totalExpense.value,
+          net: netAmount.value, avg: avgVal.value, costKg: costPerKg.value,
+        },
       };
       try {
         const saved = await DB.create(rec);
         history.value = [saved, ...history.value];
         const tag = machine ? ` [${machine}]` : '';
-        toast('ok', `บันทึก ${rec.ref}${tag} เรียบร้อย${dbMode.value === 'cloud' ? ' (ขึ้นคลาวด์)' : ''}`);
+        clearForm();   // ✅ บันทึกสำเร็จ → ล้างฟอร์มพร้อมรับเคสถัดไป
+        toast('ok', `บันทึก ${rec.ref}${tag} เรียบร้อย · ล้างฟอร์มแล้ว พร้อมรับเคสถัดไป`);
       } catch (e) {
         toast('warn', 'บันทึกไม่สำเร็จ: ' + e.message);
       }
@@ -1112,6 +1178,7 @@ createApp({
 
     function loadRecord(rec) {
       machineName.value = rec.machine || '';
+      grossInput.value = '';   // เคสที่โหลดมีน้ำหนักครบทุกแถวแล้ว ไม่ต้องทอน
       goodsRows.value = rec.goods.map(g => ({ id: uid(), name: g.name, weight: g.weight || '', price: g.price || '' }));
       expenseRows.value = buildExp().map(r => {
         const s = rec.expenses.find(e => e.method === r.method);
@@ -1145,13 +1212,6 @@ createApp({
       } catch (e) { toast('warn', 'ลบไม่สำเร็จ: ' + e.message); }
     }
 
-    function resetForm() {
-      machineName.value = '';
-      goodsRows.value = defaultGoods();
-      expenseRows.value = buildExp();
-      toast('warn', 'ล้างฟอร์ม + ชื่อเครื่อง กลับสู่ค่าเริ่มต้นแล้ว');
-    }
-
     onMounted(async () => {
       forceLocal.value = DB.isForcedLocal();
       if (forceLocal.value) {
@@ -1168,13 +1228,14 @@ createApp({
     return {
       theme, toggleTheme,
       machineName, machineSuggestions, machineActive, pickMachine,
+      grossInput, grossStatus, autoRowId, autoRemainder, rowsWeightSum,
       dbMode, dbLabel, forceLocal, showDbModal, sqlCopied, SQL, EMBED_URL, maskedKey,
       openDbModal, copySql, goOffline, reconnect,
       goodsRows, addGoods, removeGoods, rowTotal,
       unitOpts, expenseRows, expTotal, setUnit, rateUnit, qtyUnit, refNote, liveExample, num,
-      totalWeight, totalAmount, totalExpense, netAmount, avgVal, disp,
+      totalWeight, totalAmount, totalExpense, netAmount, avgVal, costPerKg, disp,
       clock, toastState,
-      history, search, filtered, expanded, toggle,
+      history, search, filtered, expanded, toggle, costKgOf,
       fmt, fmtDate, saving, saveBtn, saveRecord, onGridKey, loadRecord, armed, askDelete, resetForm,
     };
   }
